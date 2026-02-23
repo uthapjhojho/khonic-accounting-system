@@ -31,43 +31,48 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    const login = (email, password, displayName) => {
-        // Mock Login Logic
-        // In a real app, this would hit the backend API
-
-        // Simulating API call
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (email && password) {
-                    const mockUser = {
-                        name: displayName || 'Khonic Admin Finance', // Default mock name
-                        email: email,
-                        role: 'admin'
-                    };
-
-                    // If email is specific and no name provided, we can change the name
-                    if (!displayName && email.includes('louis')) {
-                        mockUser.name = 'Louis Wangg';
-                    }
-
-                    setUser(mockUser);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
-                    resolve(mockUser);
-                } else {
-                    reject(new Error('Email and password are required'));
-                }
-            }, 500);
+    const login = async (email, password) => {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const userData = { ...data.user, token: data.token };
+            setUser(userData);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+            return userData;
+        } else {
+            throw new Error(data.message || 'Login gagal');
+        }
+    };
+
+    const register = async (name, email, password) => {
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return data;
+        } else {
+            throw new Error(data.message || 'Registrasi gagal');
+        }
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem(STORAGE_KEY);
-        // We might want to clear other stored items here
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

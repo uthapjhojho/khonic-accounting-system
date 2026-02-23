@@ -1,0 +1,15 @@
+{
+    "purchase": {
+        "Posted": "bg-gray-100 text-gray-500",
+        "Paid": "bg-green-50 text-green-600",
+        "Draft": "bg-gray-100 text-gray-400"
+    },
+    "sales": {
+        "Issued": "bg-gray-100 text-gray-500",
+        "Cancelled": "bg-red-50 text-red-500",
+        "Draft": "bg-yellow-50 text-yellow-600",
+        "Unpaid": "bg-red-50 text-red-500",
+        "Partially Paid": "bg-yellow-50 text-yellow-600",
+        "Paid": "bg-green-50 text-green-600"
+    }
+}

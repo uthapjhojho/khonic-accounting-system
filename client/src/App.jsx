@@ -6,6 +6,7 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import AccountList from './pages/AccountList/AccountList';
 import GeneralJournalList from './pages/GeneralJournal/GeneralJournalList';
 import AddGeneralJournal from './pages/GeneralJournal/AddGeneralJournal';
+import EditGeneralJournal from './pages/GeneralJournal/EditGeneralJournal';
 import CashBankReceipt from './pages/CashBank/CashBankReceipt';
 import CashBankPayment from './pages/CashBank/CashBankPayment';
 import Invoicing from './pages/Sales/Invoicing';
@@ -41,6 +42,7 @@ function AppRoutes() {
       <Route path="/list-akun" element={<ProtectedRoute><AccountList /></ProtectedRoute>} />
       <Route path="/jurnal-umum" element={<ProtectedRoute><GeneralJournalList /></ProtectedRoute>} />
       <Route path="/jurnal-umum/baru" element={<ProtectedRoute><AddGeneralJournal /></ProtectedRoute>} />
+      <Route path="/jurnal-umum/edit/:id" element={<ProtectedRoute><EditGeneralJournal /></ProtectedRoute>} />
       <Route path="/penerimaan" element={<ProtectedRoute><CashBankReceipt /></ProtectedRoute>} />
       <Route path="/pengeluaran" element={<ProtectedRoute><CashBankPayment /></ProtectedRoute>} />
       <Route path="/penagihan" element={<ProtectedRoute><Invoicing /></ProtectedRoute>} />

@@ -1,21 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
-import { Trash2, Plus, Calendar, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, Calendar, ChevronDown, Check, X } from 'lucide-react';
 
 const CashBankReceipt = () => {
-    const [lines, setLines] = useState([
-        { id: 1, account: '111.002 - Bank BCA', amount: 25000000, memo: '', department: 'Keuangan', project: 'Bank' },
-    ]);
+    const [lines, setLines] = useState([]);
+    const [voucherNumber, setVoucherNumber] = useState('');
+    const [setorTo, setSetorTo] = useState('');
+    const [tanggal, setTanggal] = useState('');
+    const [memo, setMemo] = useState('');
+    const [headerAccounts, setHeaderAccounts] = useState([]); // 111.000 branch (hierarchical)
+    const [detailAccounts, setDetailAccounts] = useState([]); // Leaf nodes, excluding 111.000 branch
+    const [loading, setLoading] = useState(true);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        resetPage();
+        fetchInitialData();
+    }, []);
+
+    const resetPage = () => {
+        setLines([{ id: 1, account: '', amount: '', memo: '', department: '', project: '' }]);
+        setMemo('');
+        setSetorTo('');
+        setTanggal(new Date().toISOString().split('T')[0]);
+    };
+
+    const fetchInitialData = async () => {
+        setLoading(true);
+        try {
+            const [voucherRes, accRes] = await Promise.all([
+                fetch('http://localhost:5000/api/journals/voucher/KTMC'),
+                fetch('http://localhost:5000/api/accounts')
+            ]);
+
+            const voucherData = await voucherRes.json();
+            const rawAccounts = await accRes.json();
+
+            if (voucherData && voucherData.voucherNumber) {
+                setVoucherNumber(voucherData.voucherNumber);
+            } else {
+                console.warn('Voucher number not received from API');
+            }
+
+            if (rawAccounts && Array.isArray(rawAccounts)) {
+                // Header Dropdown: ONLY leaf nodes under 111.000 (Kas & Bank)
+                const kasBankBranch = rawAccounts.filter(a => {
+                    const isUnderKasBank = a.code.startsWith('111.');
+                    const isNotRoot = a.code !== '111.000';
+                    const hasNoChildren = !a.has_children || a.has_children === 'false' || a.has_children === 0;
+                    return isUnderKasBank && isNotRoot && hasNoChildren && a.status === 'Active';
+                });
+                setHeaderAccounts(kasBankBranch);
+
+                // Detail Dropdown: EVERY account Level > 0 that is a LEAF
+                const detailLeafs = rawAccounts.filter(a => {
+                    const hasNoChildren = !a.has_children || a.has_children === 'false' || a.has_children === 0;
+                    return hasNoChildren && a.status === 'Active' && a.level > 0;
+                });
+                setDetailAccounts(detailLeafs);
+            } else {
+                console.error('Invalid accounts data received:', rawAccounts);
+            }
+
+        } catch (err) {
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const addLine = () => {
-        setLines([...lines, { id: Date.now(), account: '', amount: 0, memo: '', department: '', project: '' }]);
+        setLines([...lines, { id: Date.now(), account: '', amount: '', memo: '', department: '', project: '' }]);
     };
 
     const removeLine = (id) => {
         setLines(lines.filter(line => line.id !== id));
     };
 
-    const totalAmount = lines.reduce((sum, line) => sum + (parseFloat(line.amount) || 0), 0);
+    const formatRupiah = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const numberString = value.toString().replace(/[^0-9]/g, '');
+        if (!numberString) return '';
+        return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    const parseRupiah = (value) => {
+        if (!value) return 0;
+        const clean = value.toString().replace(/\./g, '');
+        return parseFloat(clean) || 0;
+    };
+
+    const handleAmountChange = (id, value) => {
+        const formatted = formatRupiah(value);
+        setLines(lines.map(line => line.id === id ? { ...line, amount: formatted } : line));
+    };
+
+    const updateLine = (id, field, value) => {
+        setLines(lines.map(line => line.id === id ? { ...line, [field]: value } : line));
+    };
+
+    const totalAmount = lines.reduce((sum, line) => sum + parseRupiah(line.amount), 0);
+
+    const isSaveDisabled = isSaving || !setorTo || !tanggal || !memo || totalAmount === 0 || lines.some(l => !l.account || !l.amount);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                voucher_no: voucherNumber,
+                date: tanggal,
+                total_amount: totalAmount,
+                setor_to_account_id: setorTo,
+                memo: memo,
+                lines: lines.map(line => ({
+                    account: line.account,
+                    amount: parseRupiah(line.amount),
+                    memo: line.memo || memo,
+                    department: line.department,
+                    project: line.project
+                }))
+            };
+
+            const response = await fetch('http://localhost:5000/api/journals/receipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                setIsSuccess(true);
+            } else {
+                const err = await response.json();
+                alert('Gagal menyimpan: ' + (err.error || 'Terjadi kesalahan'));
+            }
+        } catch (err) {
+            console.error('Error saving:', err);
+            alert('Gagal menyimpan. Pastikan server berjalan.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
         <Layout title="Penerimaan Kas & Bank">
@@ -24,149 +149,216 @@ const CashBankReceipt = () => {
                 {/* Header Inputs */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 grid grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
                             No. Voucher
                         </label>
                         <input
                             type="text"
-                            defaultValue="KTMC-2510648"
-                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 focus:outline-none"
+                            value={voucherNumber}
+                            className="w-full px-4 py-2.5 rounded-lg border border-gray-100 bg-gray-50/50 text-gray-400 focus:outline-none text-sm"
                             readOnly
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-red-500 mb-2">
-                            * Setor Ke
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            <span className="text-red-500">*</span> Setor Ke
                         </label>
                         <div className="relative">
-                            <select className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white">
-                                <option>111.000 - Kas & Bank</option>
+                            <select
+                                value={setorTo}
+                                onChange={(e) => setSetorTo(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white text-sm"
+                            >
+                                <option value="">Pilih Akun</option>
+                                {headerAccounts.map(acc => {
+                                    const isSelectable = (!acc.has_children || acc.has_children === 'false' || acc.has_children === 0) && acc.status === 'Active';
+                                    return (
+                                        <option
+                                            key={acc.id}
+                                            value={acc.id}
+                                            disabled={!isSelectable}
+                                            className={!isSelectable ? 'text-gray-400 italic' : 'text-gray-900 font-medium'}
+                                        >
+                                            {'\u00A0'.repeat(Math.max(0, (acc.level - 3) * 4))}{acc.code} - {acc.name} {!isSelectable && acc.status !== 'Active' ? '(Inactive)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-red-500 mb-2">
-                            * Tanggal
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            <span className="text-red-500">*</span> Tanggal
                         </label>
                         <div className="relative">
                             <input
                                 type="date"
-                                defaultValue="2025-10-29"
-                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+                                value={tanggal}
+                                onChange={(e) => setTanggal(e.target.value)}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm cursor-pointer"
                             />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-red-500 mb-2">
-                            * Jumlah
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            <span className="text-red-500">*</span> Jumlah
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">Rp</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rp</span>
                             <input
                                 type="text"
-                                value="25.000.000"
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 focus:outline-none"
+                                value={formatRupiah(totalAmount)}
+                                className="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-100 bg-gray-50/50 text-gray-400 focus:outline-none text-sm font-medium"
                                 readOnly
                             />
                         </div>
                     </div>
 
                     <div className="col-span-2">
-                        <label className="block text-sm font-semibold text-red-500 mb-2">
-                            * Memo
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            <span className="text-red-500">*</span> Memo
                         </label>
                         <textarea
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all min-h-[80px]"
-                            defaultValue="Pinjaman dari Bank"
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all min-h-[80px] text-sm"
+                            placeholder="Contoh : penerimaan hasil piutang"
+                            value={memo}
+                            onChange={(e) => setMemo(e.target.value)}
                         ></textarea>
                     </div>
                 </div>
 
                 {/* Transaction Details */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-sm font-bold text-gray-800 mb-4">Detail Transaksi</h3>
-                    <div className="bg-blue-50/50 rounded-lg p-4 mb-4 grid grid-cols-12 gap-4 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-gray-800 mb-4 uppercase tracking-wider">Detail Transaksi</h3>
+                    <div className="bg-blue-50 rounded-t-lg p-4 grid grid-cols-12 gap-4 text-[11px] font-bold text-black uppercase tracking-widest border-b border-blue-100">
                         <div className="col-span-3">No. Akun</div>
-                        <div className="col-span-3">Jumlah</div>
+                        <div className="col-span-2">Jumlah</div>
                         <div className="col-span-3">Memo</div>
-                        <div className="col-span-3">Departemen / Proyek</div>
+                        <div className="col-span-2">Departemen</div>
+                        <div className="col-span-2">Proyek</div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="divide-y divide-gray-50">
                         {lines.map((line) => (
-                            <div key={line.id} className="grid grid-cols-12 gap-4 items-start">
+                            <div key={line.id} className="grid grid-cols-12 gap-4 items-center py-4 px-2 hover:bg-gray-50/30 transition-colors group">
                                 <div className="col-span-3 relative">
                                     <select
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white text-sm"
-                                        defaultValue={line.account}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white text-sm"
+                                        value={line.account}
+                                        onChange={(e) => updateLine(line.id, 'account', e.target.value)}
                                     >
-                                        <option value="111.002 - Bank BCA">111.002 - Bank BCA</option>
+                                        <option value="">Pilih Akun</option>
+                                        {detailAccounts.map(acc => (
+                                            <option key={acc.id} value={acc.id} className="text-gray-900">
+                                                {acc.code} - {acc.name}
+                                            </option>
+                                        ))}
                                     </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" size={14} />
                                 </div>
-                                <div className="col-span-3 relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">Rp</span>
+                                <div className="col-span-2 relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Rp</span>
                                     <input
-                                        type="number"
-                                        defaultValue={line.amount}
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm"
+                                        type="text"
+                                        value={line.amount}
+                                        onChange={(e) => handleAmountChange(line.id, e.target.value)}
+                                        placeholder="0"
+                                        className="w-full pl-10 pr-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm text-right text-gray-600 font-medium"
                                     />
                                 </div>
                                 <div className="col-span-3">
                                     <input
                                         type="text"
                                         placeholder="Masukkan memo"
-                                        defaultValue={line.memo}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm"
+                                        value={line.memo}
+                                        onChange={(e) => updateLine(line.id, 'memo', e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm text-gray-500"
                                     />
                                 </div>
-                                <div className="col-span-3 flex gap-2">
-                                    <div className="flex-1 space-y-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Departemen"
-                                            defaultValue={line.department}
-                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Proyek"
-                                            defaultValue={line.project}
-                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm"
-                                        />
-                                    </div>
-                                    <button onClick={() => removeLine(line.id)} className="text-red-400 hover:text-red-600 p-1 self-start mt-2">
-                                        <Trash2 size={18} />
+                                <div className="col-span-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Departemen"
+                                        value={line.department}
+                                        onChange={(e) => updateLine(line.id, 'department', e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm text-gray-500"
+                                    />
+                                </div>
+                                <div className="col-span-2 flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Proyek"
+                                        value={line.project}
+                                        onChange={(e) => updateLine(line.id, 'project', e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-sm text-gray-500 flex-1"
+                                    />
+                                    <button
+                                        onClick={() => removeLine(line.id)}
+                                        className="text-gray-300 hover:text-red-400 transition-colors p-1"
+                                    >
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="flex justify-end mt-2">
-                        <button onClick={addLine} className="text-green-600 font-medium hover:text-green-700 flex items-center gap-1 text-sm">
-                            <Plus size={16} /> Tambah Baris
+                    <div className="flex justify-end mt-4">
+                        <button onClick={addLine} className="text-green-600 font-bold hover:text-green-700 flex items-center gap-1 text-xs py-1 px-3 rounded-lg hover:bg-green-50 transition-all">
+                            <Plus size={14} strokeWidth={2.5} /> Tambah Baris
                         </button>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end items-center gap-4">
-                        <span className="text-gray-500 text-sm">Total Disetor :</span>
-                        <span className="font-bold text-gray-900 text-lg">Rp{totalAmount.toLocaleString('id-ID')}</span>
+                    <div className="mt-8 pt-6 border-t border-gray-50 flex justify-end items-center gap-4">
+                        <span className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Total Diterima :</span>
+                        <span className="font-medium text-gray-900 text-2xl tracking-tight">Rp {formatRupiah(totalAmount)}</span>
                     </div>
-
-
                 </div>
+
                 {/* Footer Buttons */}
-                <div className="flex justify-end gap-3 mt-6">
-                    <button className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 bg-white">
+                <div className="flex justify-end gap-3 mt-10 shadow-sm pt-6 border-t border-gray-50">
+                    <button
+                        onClick={resetPage}
+                        className="px-8 py-3 rounded-xl border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 transition-all text-sm"
+                    >
                         Batal
                     </button>
-                    <button className="px-6 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 shadow-sm">
-                        Simpan Penerimaan
+                    <button
+                        disabled={isSaveDisabled}
+                        onClick={handleSave}
+                        className={`px-10 py-3 rounded-xl font-bold transition-all text-sm ${isSaveDisabled ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-100'}`}
+                    >
+                        {isSaving ? 'Menyimpan...' : 'Simpan Penerimaan'}
                     </button>
                 </div>
+
+                {/* Success Modal */}
+                {isSuccess && (
+                    <div className="fixed inset-0 flex items-center justify-center z-[100] px-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in duration-300">
+                            <div className="p-8 flex flex-col items-center text-center">
+                                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-green-100">
+                                    <Check size={40} className="text-white" strokeWidth={3} />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 mb-2">Berhasil Tambah Penerimaan Baru</h2>
+                                <p className="text-gray-500 mb-8 text-sm">Penerimaan baru berhasil ditambahkan!</p>
+                                <button
+                                    onClick={() => {
+                                        setIsSuccess(false);
+                                        resetPage();
+                                        fetchInitialData();
+                                    }}
+                                    className="w-full py-3.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-100 text-sm"
+                                >
+                                    Kembali
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );

@@ -1,0 +1,14 @@
+{
+    "dashboard": {
+        "label": "Dashboard",
+        "path": "/dashboard"
+    },
+    "purchase_tax": {
+        "label": "Faktur Pajak Pembelian",
+        "path": "/faktur-pajak-pembelian"
+    },
+    "sales_tax": {
+        "label": "Faktur Pajak Penjualan",
+        "path": "/faktur-pajak-penjualan"
+    }
+}

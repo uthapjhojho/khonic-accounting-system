@@ -1,0 +1,53 @@
+{
+    "010.001-26.11111111": {
+        "customer_name": "PT. Marsha Lenathea Lapian",
+        "trade_invoice_no": "INV-2026-08-010",
+        "items": [
+            {
+                "name": "Lunar Strawberry Ice Cream 60ml by Vapezoo - 3mg",
+                "qty": 2,
+                "price": 1412500,
+                "total": 2825000
+            },
+            {
+                "name": "Lost Vape Ursa Nano Pod Kit - Wave Cyan",
+                "qty": 1,
+                "price": 2825937,
+                "total": 2825937
+            }
+        ],
+        "total": 5650937
+    },
+    "010.002-26.22222222": {
+        "customer_name": "CV Maju Mundur",
+        "trade_invoice_no": "INV-2026-08-013",
+        "items": [
+            {
+                "name": "Makna Ice v3 Sea Salt Caramel Latte 60ml",
+                "qty": 1,
+                "price": 675326,
+                "total": 675326
+            }
+        ],
+        "total": 675326
+    },
+    "010.003-26.33333333": {
+        "customer_name": "CV Maju Mundur",
+        "trade_invoice_no": "INV-2026-08-015",
+        "items": [
+            {
+                "name": "Druga Foxy Pod v2 Mod Only - Black Chrome",
+                "qty": 10,
+                "price": 704988,
+                "total": 7049880
+            },
+            {
+                "name": "Vapor Storm Puma 200W TC Box Mod",
+                "qty": 1,
+                "price": 9,
+                "total": 9
+            }
+        ],
+        "total": 7049889
+    }
+}
