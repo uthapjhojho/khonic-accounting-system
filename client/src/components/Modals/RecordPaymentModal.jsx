@@ -1,21 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Calendar, ChevronDown, Minus } from 'lucide-react';
 import SuccessModal from './SuccessModal';
+import discountsData from '../../data/discounts.json'; // Discount account codes and names
 
 const RecordPaymentModal = ({ isOpen, onClose }) => {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [customers, setCustomers] = useState([]);
+    const [accounts, setAccounts] = useState([]);
+    const [discounts, setDiscounts] = useState(discountsData);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
+    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [invoices, setInvoices] = useState([]);
+    const [selectedInvoices, setSelectedInvoices] = useState({});
+    const [allocations, setAllocations] = useState({});
+    const [setorTo, setSetorTo] = useState('');
+    const [selectedDiscount, setSelectedDiscount] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        if (isOpen) {
+            // Reset to default states on each open
+            setSelectedCustomer('');
+            setPaymentDate(new Date().toISOString().split('T')[0]);
+            setInvoices([]);
+            setSelectedInvoices({});
+            setAllocations({});
+            setSetorTo('');
+            setSelectedDiscount('');
+            fetchInitialData();
+        }
+    }, [isOpen]);
 
-    const handleSave = () => {
-        // Logic to save payment
-        setShowSuccess(true);
+    useEffect(() => {
+        if (selectedCustomer) {
+            fetchCustomerInvoices(selectedCustomer);
+        } else {
+            setInvoices([]);
+        }
+    }, [selectedCustomer]);
+
+    const fetchInitialData = async () => {
+        try {
+            const [custRes, accRes] = await Promise.all([
+                fetch('http://localhost:5000/api/sales/customers'),
+                fetch('http://localhost:5000/api/accounts')
+            ]);
+
+            const custData = await custRes.json();
+            const accData = await accRes.json();
+
+            setCustomers(custData);
+            const filteredAccounts = accData.filter(a => a.parent_id === '111.000' && a.status === 'Active');
+            setAccounts(filteredAccounts);
+
+            if (filteredAccounts.length > 0) setSetorTo(filteredAccounts[0].id);
+        } catch (err) {
+            console.error('Error fetching initial data:', err);
+        }
+    };
+
+    const fetchCustomerInvoices = async (customerId) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`http://localhost:5000/api/sales/customers/${customerId}/invoices`);
+            const data = await res.json();
+            setInvoices(data);
+
+            // Auto-check if items exist
+            const initialSelected = {};
+            const initialAllocations = {};
+            data.forEach(inv => {
+                initialSelected[inv.id] = false;
+                initialAllocations[inv.id] = '';
+            });
+            setSelectedInvoices(initialSelected);
+            setAllocations(initialAllocations);
+        } catch (err) {
+            console.error('Error fetching invoices:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggleInvoice = (id) => {
+        setSelectedInvoices(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    const handleAllocationChange = (id, value) => {
+        const cleanValue = value.replace(/[^0-9]/g, '');
+        setAllocations(prev => ({ ...prev, [id]: cleanValue }));
+    };
+
+    const formatNumber = (num) => {
+        if (!num) return '0';
+        return new Intl.NumberFormat('id-ID').format(num);
+    };
+
+    const formatCurrency = (num) => {
+        return 'Rp' + formatNumber(num);
+    };
+
+    const getDiscountedAmount = (amount) => {
+        if (!selectedDiscount) return amount;
+        const discount = discounts.find(d => d.code === selectedDiscount);
+        if (!discount) return amount;
+        return Math.round(amount * (1 - parseFloat(discount.percentage) / 100));
+    };
+
+    const totalAllocated = Object.keys(selectedInvoices).reduce((sum, id) => {
+        if (selectedInvoices[id]) {
+            return sum + (parseInt(allocations[id]) || 0);
+        }
+        return sum;
+    }, 0);
+
+    const totalRemaining = Object.keys(selectedInvoices).reduce((sum, id) => {
+        if (selectedInvoices[id]) {
+            const inv = invoices.find(i => i.id === parseInt(id));
+            if (inv) {
+                const discountedTotal = getDiscountedAmount(parseFloat(inv.total_amount));
+                const sisa = discountedTotal - parseFloat(inv.paid_amount);
+                return sum + sisa;
+            }
+        }
+        return sum;
+    }, 0);
+
+    const sisaAlokasi = totalAllocated - totalRemaining;
+
+    // Validation: Clickable only if at least one invoice is "Lunas"
+    const hasAtLeastOneLunas = Object.keys(selectedInvoices).some(id => {
+        if (!selectedInvoices[id]) return false;
+        const inv = invoices.find(i => i.id === parseInt(id));
+        if (!inv) return false;
+        const discountedTotal = getDiscountedAmount(parseFloat(inv.total_amount));
+        const sisaTagihan = discountedTotal - parseFloat(inv.paid_amount);
+        const allocNum = parseInt(allocations[id]) || 0;
+        return allocNum >= sisaTagihan;
+    });
+
+    const isSaveDisabled = !selectedCustomer || totalAllocated === 0 || !hasAtLeastOneLunas || sisaAlokasi < 0;
+
+    const handleSave = async () => {
+        try {
+            const finalAllocations = Object.keys(selectedInvoices)
+                .filter(id => selectedInvoices[id])
+                .map(id => ({
+                    invoiceId: parseInt(id),
+                    amount: parseInt(allocations[id]) || 0
+                }));
+
+            const response = await fetch('http://localhost:5000/api/sales/payments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: selectedCustomer,
+                    paymentDate,
+                    accountId: setorTo,
+                    discountCode: selectedDiscount,
+                    allocations: finalAllocations
+                })
+            });
+
+            if (response.ok) {
+                setShowSuccess(true);
+            }
+        } catch (err) {
+            console.error('Error saving payment:', err);
+        }
     };
 
     const handleCloseSuccess = () => {
         setShowSuccess(false);
         onClose();
     };
+
+    if (!isOpen) return null;
 
     return (
         <>
@@ -32,12 +192,19 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                     <div className="p-6 space-y-6">
                         {/* Header Input */}
                         <div>
-                            <label className="block text-sm font-semibold text-red-500 mb-2">
-                                * Nama Pelanggan
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <span className="text-red-500">*</span> Nama Pelanggan
                             </label>
                             <div className="relative">
-                                <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white">
-                                    <option>PT. Marsha Lenathea Lapian</option>
+                                <select
+                                    value={selectedCustomer}
+                                    onChange={(e) => setSelectedCustomer(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white"
+                                >
+                                    <option value="">Pilih pelanggan</option>
+                                    {Array.from(new Map(customers.map(c => [c.name, c])).values()).map(customer => (
+                                        <option key={customer.id} value={customer.id}>{customer.name}</option>
+                                    ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                             </div>
@@ -45,24 +212,32 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
 
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-red-500 mb-2">
-                                    * Tanggal Pembayaran
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <span className="text-red-500">*</span> Tanggal Pembayaran
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="date"
-                                        defaultValue="2025-10-09"
+                                        value={paymentDate}
+                                        onChange={(e) => setPaymentDate(e.target.value)}
+                                        onKeyDown={(e) => e.preventDefault()}
                                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-red-500 mb-2">
-                                    * Setor ke Akun
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <span className="text-red-500">*</span> Setor ke Akun
                                 </label>
                                 <div className="relative">
-                                    <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white">
-                                        <option>111.001 - Kas Kantor</option>
+                                    <select
+                                        value={setorTo}
+                                        onChange={(e) => setSetorTo(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white"
+                                    >
+                                        {accounts.map(a => (
+                                            <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+                                        ))}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                 </div>
@@ -72,8 +247,15 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                                     Diskon
                                 </label>
                                 <div className="relative">
-                                    <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white">
-                                        <option>701.001 - DISKON PENJUALAN BARANG</option>
+                                    <select
+                                        value={selectedDiscount}
+                                        onChange={(e) => setSelectedDiscount(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white"
+                                    >
+                                        <option value="">Pilih diskon (jika ada)</option>
+                                        {discounts.map(d => (
+                                            <option key={d.code} value={d.code}>{d.code} - {d.name}</option>
+                                        ))}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                 </div>
@@ -90,82 +272,93 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                                 <div className="col-span-4 text-right">Alokasi Pembayaran</div>
                             </div>
 
-                            {/* Row 1 */}
-                            <div className="grid grid-cols-12 gap-4 items-center py-3 border-b border-gray-50">
-                                <div className="col-span-1 flex justify-center">
-                                    <div className="w-5 h-5 bg-gray-600 rounded flex items-center justify-center text-white">
-                                        <Check size={14} />
-                                    </div>
+                            {loading ? (
+                                <div className="py-10 text-center text-gray-500 text-sm">Memuat daftar invoice...</div>
+                            ) : invoices.length === 0 ? (
+                                <div className="py-10 text-center text-gray-500 text-sm">
+                                    {selectedCustomer ? 'Tidak ada invoice yang perlu dibayar.' : 'Pilih pelanggan untuk melihat invoice.'}
                                 </div>
-                                <div className="col-span-4 text-sm font-medium text-gray-900">
-                                    INV-2025-08-002 (09-10-2025)
-                                </div>
-                                <div className="col-span-3 text-right text-sm font-bold text-gray-900">
-                                    Rp6.300.000
-                                </div>
-                                <div className="col-span-4">
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Rp</span>
-                                        <input
-                                            type="text"
-                                            defaultValue="10.000.000"
-                                            className="w-full pl-8 pr-3 py-2 text-right rounded border border-gray-300 font-bold text-gray-900 focus:ring-2 focus:ring-green-500 outline-none"
-                                        />
-                                    </div>
-                                    <div className="text-right text-xs text-green-600 font-bold mt-1 flex justify-end items-center gap-1">
-                                        LUNAS <Check size={12} />
-                                    </div>
-                                </div>
-                            </div>
+                            ) : (
+                                invoices.map(inv => {
+                                    const discountedTotal = getDiscountedAmount(parseFloat(inv.total_amount));
+                                    const sisaTagihan = discountedTotal - parseFloat(inv.paid_amount);
+                                    const allocation = allocations[inv.id] || '';
+                                    const isSelected = selectedInvoices[inv.id];
+                                    const allocNum = parseInt(allocation) || 0;
 
-                            {/* Row 2 */}
-                            <div className="grid grid-cols-12 gap-4 items-center py-3 border-b border-gray-50 bg-white">
-                                <div className="col-span-1 flex justify-center">
-                                    <div className="w-5 h-5 border border-gray-300 rounded"></div>
-                                </div>
-                                <div className="col-span-4 text-sm font-medium text-gray-900">
-                                    INV-2025-08-001 (09-11-2025)
-                                </div>
-                                <div className="col-span-3 text-right text-sm font-bold text-gray-900">
-                                    Rp6.300.000
-                                </div>
-                                <div className="col-span-4">
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Rp</span>
-                                        <input
-                                            type="text"
-                                            defaultValue="0"
-                                            className="w-full pl-8 pr-3 py-2 text-right rounded border border-gray-200 bg-gray-50 text-gray-400 focus:outline-none"
-                                            readOnly
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                                    return (
+                                        <div key={inv.id} className={`grid grid-cols-12 gap-4 items-center py-3 border-b border-gray-50 ${isSelected ? 'bg-gray-50/50' : 'bg-white'}`}>
+                                            <div className="col-span-1 flex justify-center">
+                                                <button
+                                                    onClick={() => handleToggleInvoice(inv.id)}
+                                                    className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${isSelected ? 'bg-gray-600 shadow-sm' : 'border-2 border-gray-300 hover:border-gray-400'}`}
+                                                >
+                                                    {isSelected && <Check size={16} className="text-white" strokeWidth={3} />}
+                                                </button>
+                                            </div>
+                                            <div className="col-span-4 text-sm font-bold text-gray-900">
+                                                {inv.invoice_no} ({new Date(inv.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')})
+                                            </div>
+                                            <div className="col-span-3 text-right text-sm font-bold text-gray-900">
+                                                {formatCurrency(sisaTagihan)}
+                                            </div>
+                                            <div className="col-span-4 px-2">
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Rp</span>
+                                                    <input
+                                                        type="text"
+                                                        value={isSelected ? (allocation === '' ? '' : formatNumber(allocation)) : '0'}
+                                                        onChange={(e) => handleAllocationChange(inv.id, e.target.value)}
+                                                        placeholder="0"
+                                                        className={`w-full pl-8 pr-3 py-2.5 text-right rounded-xl border-2 font-bold focus:ring-0 outline-none transition-all ${isSelected ? 'border-gray-300 text-gray-900 bg-white' : 'border-gray-100 text-gray-300 bg-gray-50 opacity-50 cursor-not-allowed'}`}
+                                                        readOnly={!isSelected}
+                                                    />
+                                                </div>
+                                                {isSelected && allocation !== '' && (
+                                                    <div className="text-right text-[10px] font-bold mt-1 uppercase flex justify-end items-center gap-1 tracking-tight">
+                                                        {allocNum >= sisaTagihan ? (
+                                                            <span className="text-green-600 flex items-center gap-1">LUNAS <Check size={10} strokeWidth={3} /></span>
+                                                        ) : (
+                                                            <span className="text-gray-500">BELUM LUNAS</span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
 
                         {/* Summary */}
-                        <div className="flex justify-end gap-8 pt-4">
+                        <div className="flex justify-end gap-12 pt-4">
                             <div className="text-center">
-                                <div className="text-xs text-gray-500 mb-1">Diskon</div>
-                                <div className="text-lg font-bold text-gray-900">10%</div>
+                                <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider font-bold">Diskon</div>
+                                <div className="text-lg font-bold text-gray-900">{selectedDiscount ? (discounts.find(d => d.code === selectedDiscount)?.percentage + '%') : '0%'}</div>
                             </div>
                             <div className="text-right">
-                                <div className="text-xs text-gray-500 mb-1">Total Dialokasikan</div>
-                                <div className="text-lg font-bold text-gray-900">Rp10.000.000</div>
+                                <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider font-bold">Total Dialokasikan</div>
+                                <div className="text-lg font-bold text-gray-900">{formatCurrency(totalAllocated)}</div>
                             </div>
                             <div className="text-right">
-                                <div className="text-xs text-gray-500 mb-1">Sisa Alokasi</div>
-                                <div className="text-lg font-bold text-green-500">+ Rp3.700.000</div>
+                                <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider font-bold">Sisa Alokasi</div>
+                                <div className={`text-lg font-bold ${sisaAlokasi < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                    {sisaAlokasi < 0 ? '-' : '+'} {formatCurrency(Math.abs(sisaAlokasi))}
+                                </div>
                             </div>
                         </div>
 
                     </div>
 
-                    <div className="p-6 border-t border-gray-100 flex justify-between bg-gray-50 rounded-b-lg">
-                        <button onClick={onClose} className="px-8 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-bold hover:bg-white bg-white w-1/3">
+                    <div className="p-6 border-t border-gray-100 flex justify-between bg-white rounded-b-lg gap-4">
+                        <button onClick={onClose} className="px-8 py-4 rounded-xl border-2 border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all w-full">
                             Batal
                         </button>
-                        <button onClick={handleSave} className="px-8 py-2.5 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 shadow-sm w-1/3">
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaveDisabled}
+                            className={`px-8 py-4 rounded-xl font-bold shadow-lg transition-all w-full ${isSaveDisabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 shadow-green-100'}`}
+                        >
                             Simpan Pembayaran
                         </button>
                     </div>
@@ -176,7 +369,7 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                 isOpen={showSuccess}
                 onClose={handleCloseSuccess}
                 title="Berhasil Simpan Pembayaran"
-                message="Pembayaran baru berhasil disimpan!"
+                message="Data pembayaran pelanggan telah berhasil dicatat dalam sistem!"
             />
         </>
     );

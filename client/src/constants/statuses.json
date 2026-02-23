@@ -1,0 +1,20 @@
+{
+    "purchase": {
+        "Issued": "bg-green-50 text-green-600",
+        "Posted": "bg-blue-50 text-blue-600",
+        "Paid": "bg-green-50 text-green-600",
+        "Draft": "bg-orange-50 text-orange-600",
+        "Cancelled": "bg-red-50 text-red-600",
+        "Voided": "bg-red-50 text-red-600"
+    },
+    "sales": {
+        "Issued": "bg-green-50 text-green-600",
+        "Posted": "bg-blue-50 text-blue-600",
+        "Paid": "bg-green-50 text-green-600",
+        "Draft": "bg-orange-50 text-orange-600",
+        "Cancelled": "bg-red-50 text-red-600",
+        "Voided": "bg-red-50 text-red-600",
+        "Unpaid": "bg-red-50 text-red-600",
+        "Partially Paid": "bg-orange-50 text-orange-600"
+    }
+}

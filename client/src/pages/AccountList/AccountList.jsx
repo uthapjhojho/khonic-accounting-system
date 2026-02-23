@@ -1,143 +1,149 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import accountService from '../../services/accountService';
 import Layout from '../../components/Layout/Layout';
 import AddAccountModal from '../../components/Modals/AddAccountModal';
 import EditAccountModal from '../../components/Modals/EditAccountModal';
 import DeleteAccountModal from '../../components/Modals/DeleteAccountModal';
 import { Plus, Search, ChevronDown, ChevronUp, PencilLine, Trash2, CheckCircle, AlertTriangle, Lock } from 'lucide-react';
+import nav from '../../constants/navigation.json';
+import PageHeader from '../../components/Layout/PageHeader';
 
-const initialAccounts = [
-    {
-        id: '100.000', code: '100.000', name: 'ASET', balance: 'Rp50.000.000', level: 0, type: 'Assets', isSystem: true, children: [
-            {
-                id: '110.000', code: '110.000', name: 'ASET LANCAR', balance: 'Rp25.000.000', level: 1, type: 'Assets', isControl: true, children: [
-                    {
-                        id: '111.000', code: '111.000', name: 'Kas & Bank', balance: 'Rp20.000.000', level: 2, type: 'Assets', isControl: true, children: [
-                            { id: '111.001', code: '111.001', name: 'Kas Kantor', balance: 'Rp5.000.000', level: 3, type: 'Assets' },
-                            { id: '111.002', code: '111.002', name: 'Bank BCA', balance: 'Rp5.000.000', level: 3, type: 'Assets' },
-                        ]
-                    },
-                    { id: '112.000', code: '112.000', name: 'Piutang Usaha', balance: 'Rp20.000.000', level: 2, type: 'Assets' },
-                ]
-            },
-            {
-                id: '120.000', code: '120.000', name: 'ASET TETAP', balance: 'Rp25.000.000', level: 1, type: 'Assets', isControl: true, children: [
-                    { id: '121.000', code: '121.000', name: 'Tanah dan Bangunan', balance: 'Rp20.000.000', level: 2, type: 'Assets' },
-                ]
-            },
-        ]
-    },
-    {
-        id: '200.000', code: '200.000', name: 'KEWAJIBAN', balance: 'Rp8.000.000', level: 0, type: 'Liabilities', isSystem: true, children: [
-            { id: '210.000', code: '210.000', name: 'Utang Usaha', balance: 'Rp5.000.000', level: 1, type: 'Liabilities' },
-            { id: '220.000', code: '220.000', name: 'Utang Gaji', balance: 'Rp4.000.000', level: 1, type: 'Liabilities' },
-        ]
-    },
-    {
-        id: '300.000', code: '300.000', name: 'EKUITAS', balance: 'Rp600.000.000', level: 0, type: 'Equity', isSystem: true, children: [
-            { id: '310.000', code: '310.000', name: 'Modal Pemilik', balance: 'Rp600.000.000', level: 1, type: 'Equity' },
-        ]
-    },
-    {
-        id: '400.000', code: '400.000', name: 'PENDAPATAN', balance: 'Rp100.000.000', level: 0, type: 'Revenue', isSystem: true, children: [
-            { id: '410.000', code: '410.000', name: 'Penjualan Barang', balance: 'Rp50.000.000', level: 1, type: 'Revenue' },
-            { id: '420.000', code: '420.000', name: 'Jasa Konsultasi', balance: 'Rp30.000.000', level: 1, type: 'Revenue' },
-            { id: '430.000', code: '430.000', name: 'Biaya Langganan', balance: 'Rp20.000.000', level: 1, type: 'Revenue' },
-        ]
-    },
-    {
-        id: '500.000', code: '500.000', name: 'PENGELUARAN', balance: 'Rp40.000.000', level: 0, type: 'Expenses', isSystem: true, children: [
-            { id: '510.000', code: '510.000', name: 'Gaji Karyawan', balance: 'Rp15.000.000', level: 1, type: 'Expenses' },
-            { id: '520.000', code: '520.000', name: 'Sewa Kantor', balance: 'Rp10.000.000', level: 1, type: 'Expenses' },
-            { id: '530.000', code: '530.000', name: 'Listrik', balance: 'Rp5.000.000', level: 1, type: 'Expenses' },
-            { id: '540.000', code: '540.000', name: 'Biaya Marketing', balance: 'Rp10.000.000', level: 1, type: 'Expenses' },
-        ]
-    },
-];
+// Removed initialAccounts mock
 
 const AccountList = () => {
+    const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [notification, setNotification] = useState(null);
+    const [notification, setNotification] = useState(location.state?.notification || null);
     const [expanded, setExpanded] = useState({});
-    const [accounts, setAccounts] = useState(initialAccounts);
+    const [accounts, setAccounts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleAddAccount = (newAccountData) => {
-        const { parentId, code, name, balance } = newAccountData;
+    const fetchAccounts = async () => {
+        try {
+            const data = await accountService.getAllAccounts();
 
-        const addToParent = (accs) => {
-            return accs.map(acc => {
-                if (acc.id === parentId) {
-                    const newEntry = {
-                        id: code,
-                        code: code,
-                        name: name,
-                        balance: `Rp${balance}`,
-                        level: acc.level + 1,
-                        type: acc.type, // Inherit type from parent
-                        parentId: parentId,
-                        children: []
-                    };
-                    return {
-                        ...acc,
-                        children: [...(acc.children || []), newEntry]
-                    };
-                }
-                if (acc.children) {
-                    return {
-                        ...acc,
-                        children: addToParent(acc.children)
-                    };
-                }
-                return acc;
-            });
-        };
+            // Build tree from flat list
+            const buildTree = (list) => {
+                if (!list || !Array.isArray(list)) return [];
+                const map = {};
+                list.forEach(item => {
+                    map[item.id] = { ...item, children: [] };
+                });
+                const tree = [];
+                list.forEach(item => {
+                    if (item.parent_id && map[item.parent_id]) {
+                        map[item.parent_id].children.push(map[item.id]);
+                    } else {
+                        tree.push(map[item.id]);
+                    }
+                });
+                return tree;
+            };
 
-        setAccounts(prev => addToParent(prev));
+            setAccounts(buildTree(data));
+        } catch (err) {
+            console.error('Error fetching accounts:', err);
+            setAccounts([]); // Reset to empty if error
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleEditAccount = (updatedData) => {
-        const updateInList = (accs) => {
-            return accs.map(acc => {
-                if (acc.id === updatedData.id) {
-                    return {
-                        ...acc,
-                        code: updatedData.code,
-                        name: updatedData.name,
-                        balance: `Rp${updatedData.balance}`,
-                        parentId: updatedData.parentId
-                    };
-                }
-                if (acc.children) {
-                    return {
-                        ...acc,
-                        children: updateInList(acc.children)
-                    };
-                }
-                return acc;
-            });
-        };
-        setAccounts(prev => updateInList(prev));
+    React.useEffect(() => {
+        fetchAccounts();
+    }, []);
 
-        // Show success notification
-        setNotification({ message: 'Berhasil Edit Akun!', type: 'success' });
-        setTimeout(() => setNotification(null), 8000);
+    React.useEffect(() => {
+        if (location.state?.notification) {
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
+
+    const handleAddAccount = async (newAccountData) => {
+        try {
+            const { parent_id, code, name, balance } = newAccountData;
+
+            // Find parent to get level and type
+            const findParent = (accs, id) => {
+                for (const acc of accs) {
+                    if (acc.id === id) return acc;
+                    if (acc.children) {
+                        const found = findParent(acc.children, id);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            const parent = findParent(accounts, parent_id);
+
+            await accountService.createAccount({
+                id: code,
+                code,
+                name,
+                level: parent ? parent.level + 1 : 0,
+                type: parent ? parent.type : 'Assets',
+                parent_id: parent_id,
+                balance: parseBalance(balance),
+                is_system: false
+            });
+
+            await fetchAccounts();
+            setNotification({ message: 'Berhasil Tambah Akun!', type: 'success' });
+            setTimeout(() => setNotification(null), 3000);
+            return { success: true };
+        } catch (err) {
+            console.error('Error adding account:', err);
+            const errorMsg = err.response?.data?.error || err.message || 'Gagal tambah akun';
+            setNotification({ message: errorMsg, type: 'error' });
+            setTimeout(() => setNotification(null), 5000);
+            return { success: false, message: errorMsg };
+        }
     };
 
-    const handleDeleteAccount = (id) => {
-        const removeFromList = (accs) => {
-            return accs.filter(acc => acc.id !== id).map(acc => ({
-                ...acc,
-                children: acc.children ? removeFromList(acc.children) : []
-            }));
-        };
-        setAccounts(prev => removeFromList(prev));
+    const handleEditAccount = async (updatedData) => {
+        try {
+            await accountService.updateAccount(updatedData.id, {
+                id: updatedData.id,
+                code: updatedData.code,
+                name: updatedData.name,
+                level: updatedData.level,
+                type: updatedData.type,
+                parent_id: updatedData.parent_id,
+                is_system: updatedData.is_system,
+                balance: parseBalance(updatedData.balance)
+            });
 
-        // Show success notification
-        setNotification({ message: 'Berhasil Hapus Akun!', type: 'success' });
-        setTimeout(() => setNotification(null), 8000);
+            await fetchAccounts();
+            setNotification({ message: 'Berhasil Edit Akun!', type: 'success' });
+            setTimeout(() => setNotification(null), 3000);
+            return { success: true };
+        } catch (err) {
+            console.error('Error updating account:', err);
+            const errorMsg = err.response?.data?.error || err.message || 'Gagal edit akun';
+            setNotification({ message: errorMsg, type: 'error' });
+            setTimeout(() => setNotification(null), 5000);
+            return { success: false, message: errorMsg };
+        }
+    };
+
+    const handleDeleteAccount = async (id) => {
+        try {
+            await accountService.deleteAccount(id);
+            await fetchAccounts();
+            setNotification({ message: 'Berhasil Hapus Akun!', type: 'success' });
+            setTimeout(() => setNotification(null), 3000);
+        } catch (err) {
+            console.error('Error deleting account:', err);
+            const errorMsg = err.response?.data?.error || err.message || 'Gagal hapus akun';
+            setNotification({ message: errorMsg, type: 'warning' });
+            setTimeout(() => setNotification(null), 5000);
+        }
     };
 
     const handleEditClick = (account) => {
@@ -168,10 +174,36 @@ const AccountList = () => {
         }));
     };
 
-    // Helper to parse currency string to number
-    const parseBalance = (balanceStr) => {
-        if (!balanceStr) return 0;
-        return parseInt(balanceStr.replace(/Rp|\./g, '')) || 0;
+    // Helper to parse balance (can be number or string from API or input)
+    const parseBalance = (val) => {
+        if (typeof val === 'number') return val;
+        if (!val || val === '') return 0;
+
+        let str = val.toString().trim().replace(/Rp|\s/g, '');
+
+        // If it contains a comma, it's definitely Indonesian format (dot=thousands, comma=decimal)
+        if (str.includes(',')) {
+            str = str.replace(/\./g, '').replace(',', '.');
+        } else {
+            // Handle cases with only dots
+            const dots = (str.match(/\./g) || []).length;
+            if (dots > 1) {
+                // Multiple dots = thousands separators (e.g. 1.000.000)
+                str = str.replace(/\./g, '');
+            } else if (dots === 1) {
+                // Single dot: ambiguous. 
+                // In ID format, 1.000 is 1000. In EN format, 1.000 is 1.
+                // If the dot is followed by exactly 3 digits, it's almost certainly a thousand separator in this context.
+                const parts = str.split('.');
+                if (parts[1].length === 3) {
+                    str = str.replace(/\./g, '');
+                }
+                // Otherwise, keep the dot as decimal (e.g. 1000.50 from API)
+            }
+        }
+
+        const result = parseFloat(str);
+        return isNaN(result) ? 0 : result;
     };
 
     // Helper to format number to currency string
@@ -235,7 +267,7 @@ const AccountList = () => {
                         <div className="flex-1 text-gray-900 flex items-center gap-2">
                             {account.name}
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {(account.isSystem || account.isControl) && (
+                                {account.is_system && (
                                     <div className="p-1.5 bg-gray-200/50 border border-gray-300/30 rounded-lg text-gray-500">
                                         <Lock size={12} />
                                     </div>
@@ -295,7 +327,7 @@ const AccountList = () => {
                     <div className="flex-1 flex items-center gap-2">
                         <span className="text-gray-900 font-medium">{account.name}</span>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {account.isSystem || account.isControl ? (
+                            {account.is_system ? (
                                 <div className="p-1.5 bg-gray-50 border border-gray-100 rounded-lg text-gray-400">
                                     <Lock size={14} />
                                 </div>
@@ -318,7 +350,9 @@ const AccountList = () => {
                         </div>
                     </div>
                     <div className="w-64 text-right pr-4">
-                        <span className="text-gray-500 font-medium min-w-[120px] inline-block pr-[28px]">{account.balance}</span>
+                        <span className={`min-w-[120px] inline-block pr-[28px] font-medium ${hasChildren ? 'text-gray-900' : 'text-gray-500'}`}>
+                            {formatBalance(hasChildren ? calculateTotal(account) : parseBalance(account.balance))}
+                        </span>
                     </div>
                 </div>
                 {hasChildren && isExpanded && account.children.map((child, index) =>
@@ -329,18 +363,29 @@ const AccountList = () => {
     };
 
     return (
-        <Layout title="Daftar Akun">
+        <Layout>
+            <PageHeader
+                title={nav.accounts.label}
+                breadcrumbs={[
+                    { label: nav.accounts.label, path: nav.accounts.path }
+                ]}
+            />
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[calc(100vh-8rem)] relative">
+                {loading && (
+                    <div className="absolute inset-0 bg-white/50 z-50 flex items-center justify-center rounded-xl">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
+                )}
                 {/* Floating Notification */}
                 {notification && (
-                    <div className={`fixed top-20 right-8 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border shadow-xl animate-in slide-in-from-top-2 duration-300 ${notification.type === 'warning'
-                        ? 'bg-[#FFF9F2] text-[#B45309] border-[#FED7AA]'
-                        : 'bg-white text-green-700 border-green-100'
+                    <div className={`fixed top-20 right-8 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border border-transparent shadow-xl animate-in slide-in-from-top-2 duration-300 ${(notification.type === 'warning' || notification.type === 'error')
+                        ? 'bg-red-500 text-white'
+                        : 'bg-green-600 text-white'
                         }`}>
-                        {notification.type === 'warning' ? (
-                            <AlertTriangle size={18} className="text-[#F59E0B]" />
+                        {(notification.type === 'warning' || notification.type === 'error') ? (
+                            <AlertTriangle size={18} className="text-white" />
                         ) : (
-                            <CheckCircle size={18} className="text-green-500" />
+                            <CheckCircle size={18} className="text-white" />
                         )}
                         <span className="font-bold text-sm">{notification.message}</span>
                     </div>

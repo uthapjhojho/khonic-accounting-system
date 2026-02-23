@@ -1,0 +1,34 @@
+{
+    "dashboard": {
+        "label": "Dashboard",
+        "path": "/dashboard"
+    },
+    "accounts": {
+        "label": "Daftar Akun",
+        "path": "/list-akun"
+    },
+    "general_journal": {
+        "label": "Jurnal Umum",
+        "path": "/jurnal-umum"
+    },
+    "receipt": {
+        "label": "Penerimaan Kas & Bank",
+        "path": "/penerimaan"
+    },
+    "payment": {
+        "label": "Pengeluaran Kas & Bank",
+        "path": "/pengeluaran"
+    },
+    "invoicing": {
+        "label": "Penagihan",
+        "path": "/penagihan"
+    },
+    "purchase_tax": {
+        "label": "Faktur Pajak Pembelian",
+        "path": "/faktur-pajak-pembelian"
+    },
+    "sales_tax": {
+        "label": "Faktur Pajak Penjualan",
+        "path": "/faktur-pajak-penjualan"
+    }
+}

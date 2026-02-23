@@ -1,0 +1,92 @@
+{
+    "010.001-26.11111111": {
+        "customer_name": "CV. Gemilang Sejahtera",
+        "trade_invoice_no": "INV-2025-09-003",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Jasa Audit Finansial Q3 2025",
+                "qty": 1,
+                "price": 2500000,
+                "total": 2500000
+            },
+            {
+                "name": "Biaya Pelaporan SPT Tahunan",
+                "qty": 1,
+                "price": 1000000,
+                "total": 1000000
+            },
+            {
+                "name": "Meterai dan Dokumen",
+                "qty": 1,
+                "price": 61811,
+                "total": 61811
+            }
+        ],
+        "total": 3561811
+    },
+    "010.002-26.22222222": {
+        "customer_name": "CV. Gemilang Sejahtera",
+        "trade_invoice_no": "INV-2025-09-005",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Monitor Dell UltraSharp 24\"",
+                "qty": 2,
+                "price": 850000,
+                "total": 1700000
+            },
+            {
+                "name": "Keyboard Mechanical Keychron K2",
+                "qty": 1,
+                "price": 500000,
+                "total": 500000
+            },
+            {
+                "name": "Mouse Logitech MX Master 3S",
+                "qty": 1,
+                "price": 223730,
+                "total": 223730
+            }
+        ],
+        "total": 2423730
+    },
+    "010.003-26.33333333": {
+        "customer_name": "CV. Gemilang Sejahtera",
+        "trade_invoice_no": "INV-2025-09-004",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Langganan AWS Enterprise - Jan 2026",
+                "qty": 1,
+                "price": 5000000,
+                "total": 5000000
+            },
+            {
+                "name": "Managed Services Support Level 2",
+                "qty": 1,
+                "price": 2049889,
+                "total": 2049889
+            }
+        ],
+        "total": 7049889
+    },
+    "010.002-26.44444444": {
+        "customer_name": "PT. Sukses Selalu",
+        "trade_invoice_no": "INV-2025-08-009",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Maintenance Rutin Lift Gedung",
+                "qty": 2,
+                "price": 250000,
+                "total": 500000
+            }
+        ],
+        "total": 500000
+    }
+}

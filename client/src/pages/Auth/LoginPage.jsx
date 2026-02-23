@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, User, Lock, Loader, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { LogIn, User, Lock, Loader, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -11,17 +11,35 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
+
+    // 10-second auto-dismiss for success notification
+    useEffect(() => {
+        if (successMessage) {
+            const timer = setTimeout(() => setSuccessMessage(''), 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [successMessage]);
+
+    // Clear state from history so it doesn't reappear
+    useEffect(() => {
+        if (location.state?.message) {
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMessage(''); // Dismiss success message when clicking login
         setIsLoading(true);
 
         try {
             await login(email, password);
             navigate('/list-akun'); // Redirect to dashboard after login
         } catch (err) {
-            setError('Failed to login. Please check your credentials.');
+            setError(err.message || 'Login gagal. Silakan periksa kredensial Anda.');
         } finally {
             setIsLoading(false);
         }
@@ -44,6 +62,13 @@ const LoginPage = () => {
                 {error && (
                     <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 border border-red-100">
                         {error}
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="fixed top-20 right-8 z-50 flex items-center gap-2 px-6 py-4 rounded-xl border border-transparent bg-green-600 text-white shadow-2xl animate-in slide-in-from-top-4 duration-300">
+                        <CheckCircle size={20} className="text-white" />
+                        <span className="font-bold tracking-tight">{successMessage}</span>
                     </div>
                 )}
 

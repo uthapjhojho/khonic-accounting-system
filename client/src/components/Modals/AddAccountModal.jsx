@@ -15,6 +15,16 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
     const [isSuccess, setIsSuccess] = useState(false);
     const dropdownRef = useRef(null);
 
+    useEffect(() => {
+        let timer;
+        if (isSuccess) {
+            timer = setTimeout(() => {
+                handleCloseFull();
+            }, 2000);
+        }
+        return () => clearTimeout(timer);
+    }, [isSuccess]);
+
     // Reset form when modal opens or closes
     useEffect(() => {
         if (!isOpen) {
@@ -29,7 +39,7 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
     const flattenAccounts = (accs, level = 0) => {
         let flat = [];
         accs.forEach(acc => {
-            flat.push({ id: acc.id, code: acc.code, name: acc.name, level });
+            flat.push({ id: acc.id, code: acc.code, name: acc.name, level, parent_id: acc.parent_id });
             if (acc.children) {
                 flat = [...flat, ...flattenAccounts(acc.children, level + 1)];
             }
@@ -54,8 +64,8 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
 
     // Helper to format number to currency string (Rp is handled by absolute span)
     const formatRupiahValue = (value) => {
-        if (!value || value === '0') return '';
-        const numberString = value.replace(/[^0-9]/g, '');
+        if (value === null || value === undefined || value === '') return '';
+        const numberString = value.toString().replace(/[^0-9]/g, '');
         if (!numberString || numberString === '0') return '';
         return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
@@ -64,25 +74,51 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
         let newErrors = { ...errors };
 
         if (field === 'nomorAkun' || field === 'akunInduk') {
-            const codeToValidate = field === 'nomorAkun' ? value : formData.nomorAkun;
-            const parentToValidate = field === 'akunInduk' ? value : currentParent;
+            const code = field === 'nomorAkun' ? value : formData.nomorAkun;
+            const parent = field === 'akunInduk' ? value : currentParent;
 
-            if (codeToValidate) {
-                // Check prefix match
-                if (parentToValidate) {
-                    const parentPrefix = parentToValidate.code.split('.')[0];
-                    const ownPrefix = codeToValidate.split('.')[0];
-                    if (parentPrefix !== ownPrefix) {
-                        newErrors.nomorAkun = `Nomor akun harus diawali dengan ${parentPrefix}`;
-                    } else if (usedCodes.includes(codeToValidate)) {
-                        newErrors.nomorAkun = 'Nomor akun sudah digunakan';
+            if (code && parent) {
+                const codeNum = parseFloat(code);
+                const parentNum = parseFloat(parent.code);
+                const nextLevel = parent.level + 1;
+
+                // 1. Level Check (Max Level 3)
+                if (nextLevel > 3) {
+                    newErrors.nomorAkun = 'Maksimal hirarki adalah level 3';
+                } else if (usedCodes.includes(code)) {
+                    // 2. Duplicate Check
+                    newErrors.nomorAkun = 'Nomor akun sudah digunakan';
+                } else {
+                    // 3. Range & Format Check based on Level
+                    let isValidRange = false;
+                    let isValidFormat = false;
+
+                    if (nextLevel === 1) {
+                        // Parent is Level 0 (e.g., 100.000)
+                        // Range: [100.000, 200.000)
+                        isValidRange = codeNum >= parentNum && codeNum < parentNum + 100.000;
+                        isValidFormat = code.endsWith('.000');
+                    } else if (nextLevel === 2) {
+                        // Parent is Level 1 (e.g., 110.000)
+                        // Range: [110.000, 120.000)
+                        isValidRange = codeNum >= parentNum && codeNum < parentNum + 10.000;
+                        isValidFormat = code.endsWith('.000');
+                    } else if (nextLevel === 3) {
+                        // Parent is Level 2 (e.g., 111.000)
+                        // Range: [111.000, 112.000)
+                        isValidRange = codeNum >= parentNum && codeNum < parentNum + 1.000;
+                        isValidFormat = !code.endsWith('.000') && code.includes('.');
+                    }
+
+                    if (!isValidRange) {
+                        newErrors.nomorAkun = `Nomor harus dalam rentang parent (${parent.code})`;
+                    } else if (!isValidFormat) {
+                        newErrors.nomorAkun = nextLevel === 3 ? 'Format detail harus xxx.yyy (bukan .000)' : 'Format harus xxx.000';
                     } else {
                         delete newErrors.nomorAkun;
                     }
-                } else {
-                    delete newErrors.nomorAkun;
                 }
-            } else {
+            } else if (!code) {
                 delete newErrors.nomorAkun;
             }
         }
@@ -113,21 +149,24 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
     };
 
     const handleParentSelect = (parent) => {
-        if (!parent.code.endsWith('.000')) return;
+        if (parent.level >= 3) return; // Level 3 cannot be a parent
         setFormData(prev => ({ ...prev, akunInduk: parent }));
         setIsDropdownOpen(false);
         validate('akunInduk', parent);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (onAddAccount) {
-            onAddAccount({
-                parentId: formData.akunInduk?.id,
+            const result = await onAddAccount({
+                parent_id: formData.akunInduk?.id,
                 code: formData.nomorAkun,
                 name: formData.namaAkun,
                 balance: formData.saldo
             });
-            setIsSuccess(true);
+
+            if (result && result.success) {
+                setIsSuccess(true);
+            }
         }
     };
 
@@ -204,7 +243,7 @@ const AddAccountModal = ({ isOpen, onClose, accounts = [], onAddAccount }) => {
                             {isDropdownOpen && (
                                 <div className="absolute z-10 w-[200%] mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-64 overflow-y-auto py-2">
                                     {flatAccounts.map((acc) => {
-                                        const isSelectable = acc.code.endsWith('.000');
+                                        const isSelectable = acc.level < 3;
                                         return (
                                             <button
                                                 key={acc.id}

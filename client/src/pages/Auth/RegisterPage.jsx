@@ -12,7 +12,7 @@ const RegisterPage = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth(); // Using login for mock registration
+    const { register } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -27,12 +27,11 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         try {
-            // Mock registration logic: basically just log them in
-            // In a real app, this would be a register API call
-            await login(email, password, name);
-            navigate('/list-akun');
+            // Real registration logic
+            await register(name, email, password);
+            navigate('/', { state: { message: 'Akun Berhasil Dibuat' } });
         } catch (err) {
-            setError('Gagal melakukan registrasi. Silakan coba lagi.');
+            setError(err.message || 'Gagal melakukan registrasi. Silakan coba lagi.');
         } finally {
             setIsLoading(false);
         }

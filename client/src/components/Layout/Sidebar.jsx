@@ -68,7 +68,7 @@ const Sidebar = () => {
                         <h3 className="text-xs font-semibold text-gray-500 mb-3 tracking-wider">{section.section}</h3>
                         <div className="space-y-1">
                             {section.items.map((item) => {
-                                const isActive = location.pathname === item.path;
+                                const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                                 const Icon = item.icon;
                                 return (
                                     <Link

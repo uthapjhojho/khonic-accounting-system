@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronDown, Check } from 'lucide-react';
+import { X, ChevronDown, Check, AlertTriangle } from 'lucide-react';
 
 // Helper to flatten accounts
 const flattenAccounts = (accs, level = 0) => {
     let flat = [];
     accs.forEach(acc => {
-        flat.push({ id: acc.id, code: acc.code, name: acc.name, level, parentId: acc.parentId });
+        flat.push({ id: acc.id, code: acc.code, name: acc.name, level, parent_id: acc.parent_id });
         if (acc.children) {
             flat = [...flat, ...flattenAccounts(acc.children, level + 1)];
         }
@@ -24,15 +24,15 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
     const [formData, setFormData] = useState(initialFormState);
     const [errors, setErrors] = useState({});
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [isError, setIsError] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const dropdownRef = useRef(null);
 
     // Populate form when account prop changes or modal opens
     useEffect(() => {
         if (isOpen && account) {
             const allFlat = flattenAccounts(accounts);
-            // Try to find parent by ID, or if ID is missing, try by code prefix
-            let parent = allFlat.find(a => a.id === account.parentId);
+            let parent = allFlat.find(a => a.id === account.parent_id);
 
             if (!parent && account.code) {
                 const parentCode = account.code.split('.')[0] + '.000';
@@ -43,18 +43,22 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
                 namaAkun: account.name || '',
                 akunInduk: parent || null,
                 nomorAkun: account.code || '',
-                saldo: formatRupiahValue(account.balance?.replace('Rp', '').replace(/\./g, '') || '')
+                saldo: formatRupiahValue(Math.round(parseFloat(account.balance || 0)))
             });
             setErrors({});
             setIsDropdownOpen(false);
-            setIsSuccess(false);
-        } else if (!isOpen) {
+        }
+    }, [isOpen, account]); // Only run when modal opens or active account changes
+
+    // Reset success/error states when modal is closed
+    useEffect(() => {
+        if (!isOpen) {
             setFormData(initialFormState);
             setErrors({});
-            setIsDropdownOpen(false);
-            setIsSuccess(false);
+            setIsError(false);
+            setErrorMsg('');
         }
-    }, [isOpen, account, accounts]);
+    }, [isOpen]);
 
     const flatAccounts = flattenAccounts(accounts);
 
@@ -74,7 +78,7 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
     }, []);
 
     const formatRupiahValue = (value) => {
-        if (!value || value === '0') return '';
+        if (value === null || value === undefined || value === '') return '';
         const numberString = value.toString().replace(/[^0-9]/g, '');
         if (!numberString || numberString === '0') return '';
         return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -136,21 +140,31 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
         validate('akunInduk', parent);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (onEditAccount) {
-            onEditAccount({
+            const result = await onEditAccount({
                 id: account.id,
-                parentId: formData.akunInduk?.id,
+                parent_id: formData.akunInduk?.id,
                 code: formData.nomorAkun,
                 name: formData.namaAkun,
-                balance: formData.saldo
+                balance: formData.saldo,
+                // Preserve fields not editable in the form
+                level: account.level,
+                type: account.type,
+                is_system: account.is_system
             });
-            onClose(); // Close modal immediately on success
+
+            if (result && result.success) {
+                onClose(); // Close immediately on success
+            } else {
+                setErrorMsg(result?.message || 'Gagal menyimpan perubahan');
+                setIsError(true);
+            }
         }
     };
 
     const handleCloseFull = () => {
-        setIsSuccess(false);
+        setIsError(false);
         onClose();
     };
 
@@ -163,18 +177,19 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 px-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative">
-                {isSuccess && (
+                {/* Error View */}
+                {isError && (
                     <div className="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-                        <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mb-10 shadow-lg shadow-green-100 scale-125">
-                            <Check size={48} className="text-white" strokeWidth={3} />
+                        <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center mb-10 shadow-lg shadow-red-100 scale-125">
+                            <AlertTriangle size={48} className="text-white" strokeWidth={3} />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Berhasil Simpan Perubahan</h2>
-                        <p className="text-gray-500 mb-10">Perubahan akun berhasil disimpan!</p>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-red-600">Gagal Simpan Perubahan</h2>
+                        <p className="text-gray-500 mb-10">{errorMsg}</p>
                         <button
-                            onClick={handleCloseFull}
-                            className="w-full py-4 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-100"
+                            onClick={() => setIsError(false)}
+                            className="w-full py-4 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100"
                         >
-                            Kembali
+                            Ulangi Lagi
                         </button>
                     </div>
                 )}
@@ -207,13 +222,13 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
                             </label>
                             <button
                                 type="button"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-200 outline-none flex items-center justify-between bg-white text-left text-gray-900"
+                                disabled={true}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none flex items-center justify-between bg-gray-50 text-left text-gray-400 cursor-not-allowed"
                             >
                                 <span className="truncate">
                                     {formData.akunInduk ? `${formData.akunInduk.code}` : ''}
                                 </span>
-                                <ChevronDown size={18} className="text-gray-400 flex-shrink-0 ml-2" />
+                                <ChevronDown size={18} className="text-gray-300 flex-shrink-0 ml-2" />
                             </button>
 
                             {isDropdownOpen && (
@@ -247,9 +262,9 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
                                 type="text"
                                 value={formData.nomorAkun}
                                 maxLength={7}
-                                onChange={(e) => handleInputChange('nomorAkun', e.target.value)}
-                                placeholder="Contoh : 120.000"
-                                className={`w-full px-4 py-3 rounded-xl border ${errors.nomorAkun ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-gray-200 outline-none transition-all`}
+                                disabled={true}
+                                readOnly={true}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-gray-400 outline-none transition-all cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -264,9 +279,9 @@ const EditAccountModal = ({ isOpen, onClose, accounts = [], onEditAccount, accou
                             <input
                                 type="text"
                                 value={formData.saldo}
-                                placeholder="0"
-                                onChange={(e) => handleInputChange('saldo', e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-200 outline-none transition-all"
+                                disabled={true}
+                                readOnly={true}
+                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-gray-400 outline-none transition-all cursor-not-allowed"
                             />
                         </div>
                     </div>

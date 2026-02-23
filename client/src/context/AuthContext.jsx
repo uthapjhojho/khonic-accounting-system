@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -31,43 +32,34 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    const login = (email, password, displayName) => {
-        // Mock Login Logic
-        // In a real app, this would hit the backend API
+    const login = async (email, password) => {
+        try {
+            const data = await authService.login({ email, password });
+            const userData = { ...data.user, token: data.token };
+            setUser(userData);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+            return userData;
+        } catch (err) {
+            throw new Error(err.response?.data?.message || 'Login gagal');
+        }
+    };
 
-        // Simulating API call
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (email && password) {
-                    const mockUser = {
-                        name: displayName || 'Khonic Admin Finance', // Default mock name
-                        email: email,
-                        role: 'admin'
-                    };
-
-                    // If email is specific and no name provided, we can change the name
-                    if (!displayName && email.includes('louis')) {
-                        mockUser.name = 'Louis Wangg';
-                    }
-
-                    setUser(mockUser);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
-                    resolve(mockUser);
-                } else {
-                    reject(new Error('Email and password are required'));
-                }
-            }, 500);
-        });
+    const register = async (name, email, password) => {
+        try {
+            const data = await authService.register({ name, email, password });
+            return data;
+        } catch (err) {
+            throw new Error(err.response?.data?.message || 'Registrasi gagal');
+        }
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem(STORAGE_KEY);
-        // We might want to clear other stored items here
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

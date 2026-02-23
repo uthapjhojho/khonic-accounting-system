@@ -1,0 +1,22 @@
+[
+    {
+        "code": "LP-001",
+        "label": "LP-001 — INV-2025-09-003 (CV. Gemilang Sejahtera)",
+        "tax_invoice_no": "010.001-26.11111111"
+    },
+    {
+        "code": "LP-002",
+        "label": "LP-002 — INV-2025-09-005 (CV. Gemilang Sejahtera)",
+        "tax_invoice_no": "010.002-26.22222222"
+    },
+    {
+        "code": "LP-003",
+        "label": "LP-003 — INV-2025-09-004 (CV. Gemilang Sejahtera)",
+        "tax_invoice_no": "010.003-26.33333333"
+    },
+    {
+        "code": "LP-004",
+        "label": "LP-004 — INV-2025-08-009 (PT. Sukses Selalu)",
+        "tax_invoice_no": "010.002-26.44444444"
+    }
+]

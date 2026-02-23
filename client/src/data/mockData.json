@@ -1,0 +1,242 @@
+{
+    "purchase_orders": {
+        "PO-001": {
+            "supplier": "CV Maju Mundur",
+            "items": [
+                {
+                    "name": "Makna Ice v3 Sea Salt Caramel Latte 60ml by Union Labs - 3mg",
+                    "qty": 3,
+                    "price": 150000,
+                    "total": 450000
+                },
+                {
+                    "name": "Liquid Oat Drips Pod Friendly 30ml 15mg",
+                    "qty": 4,
+                    "price": 125000,
+                    "total": 500000
+                },
+                {
+                    "name": "Lunar Strawberry Ice Cream 60ml by Vapezoo - 3mg",
+                    "qty": 6,
+                    "price": 135000,
+                    "total": 810000
+                }
+            ]
+        },
+        "PO-002": {
+            "supplier": "PT. Supplier Jaya",
+            "items": [
+                {
+                    "name": "Monitor LG 24MP400-B 24 Inch IPS Full HD",
+                    "qty": 2,
+                    "price": 1500000,
+                    "total": 3000000
+                },
+                {
+                    "name": "Keyboard Logitech K120 USB",
+                    "qty": 5,
+                    "price": 80000,
+                    "total": 400000
+                }
+            ]
+        },
+        "PO-003": {
+            "supplier": "PT. Grosir Elektronik",
+            "items": [
+                {
+                    "name": "SSD Samsung 980 Pro 1TB NVMe Gen4",
+                    "qty": 1,
+                    "price": 1200000,
+                    "total": 1200000
+                }
+            ]
+        }
+    },
+    "sales_invoices": [
+        {
+            "id": 1,
+            "number": "010.001-26.12345678",
+            "date": "28/10/2026",
+            "customer": "CV Maju Mundur",
+            "dpp": "Rp30.000.000",
+            "ppn": "Rp3.300.000",
+            "total": "Rp33.300.000",
+            "status": "Issued"
+        },
+        {
+            "id": 2,
+            "number": "010.002-26.12345679",
+            "date": "29/10/2026",
+            "customer": "CV Sukses Selalu",
+            "dpp": "Rp50.000.000",
+            "ppn": "Rp5.500.000",
+            "total": "Rp55.500.000",
+            "status": "Issued"
+        },
+        {
+            "id": 3,
+            "number": "010.003-26.12345680",
+            "date": "30/10/2026",
+            "customer": "CV Bintang Jaya",
+            "dpp": "Rp70.000.000",
+            "ppn": "Rp7.000.000",
+            "total": "Rp77.000.000",
+            "status": "Cancelled"
+        },
+        {
+            "id": 4,
+            "number": "010.004-26.12345681",
+            "date": "31/10/2026",
+            "customer": "CV Karya Abadi",
+            "dpp": "Rp90.000.000",
+            "ppn": "Rp8.500.000",
+            "total": "Rp98.500.000",
+            "status": "Cancelled"
+        },
+        {
+            "id": 5,
+            "number": "010.005-26.12345682",
+            "date": "01/11/2026",
+            "customer": "CV Mutiara Mandiri",
+            "dpp": "Rp110.000.000",
+            "ppn": "Rp10.000.000",
+            "total": "Rp120.000.000",
+            "status": "Issued"
+        },
+        {
+            "id": 6,
+            "number": "010.006-26.12345683",
+            "date": "02/11/2026",
+            "customer": "CV Cipta Karya",
+            "dpp": "Rp130.000.000",
+            "ppn": "Rp12.000.000",
+            "total": "Rp142.000.000",
+            "status": "Issued"
+        },
+        {
+            "id": 7,
+            "number": "010.007-26.12345684",
+            "date": "03/11/2026",
+            "customer": "CV Sejahtera",
+            "dpp": "Rp150.000.000",
+            "ppn": "Rp15.000.000",
+            "total": "Rp165.000.000",
+            "status": "Draft"
+        },
+        {
+            "id": 8,
+            "number": "010.008-26.12345685",
+            "date": "04/11/2026",
+            "customer": "CV Abadi Jaya",
+            "dpp": "Rp180.000.000",
+            "ppn": "Rp18.000.000",
+            "total": "Rp198.000.000",
+            "status": "Issued"
+        }
+    ],
+    "purchase_invoices": [
+        {
+            "id": 1,
+            "number": "010.001-26.12345678",
+            "date": "28/10/2026",
+            "supplier": "CV Maju Mundur",
+            "po": "PO-001",
+            "amount": "Rp5.500.000",
+            "status": "Posted"
+        },
+        {
+            "id": 2,
+            "number": "123.456-78.98765432",
+            "date": "28/10/2026",
+            "supplier": "PT. Supplier Jaya",
+            "po": "PO-002",
+            "amount": "Rp3.400.000",
+            "status": "Paid"
+        },
+        {
+            "id": 3,
+            "number": "987.654-32.12345678",
+            "date": "28/10/2026",
+            "supplier": "PT. Grosir Elektronik",
+            "po": "PO-003",
+            "amount": "Rp1.200.000",
+            "status": "Draft"
+        },
+        {
+            "id": 4,
+            "number": "456.789-01.23456789",
+            "date": "28/10/2026",
+            "supplier": "PT. Cloud Production",
+            "po": "PO-004",
+            "amount": "Rp4.200.500",
+            "status": "Posted"
+        }
+    ],
+    "customers": [
+        "PT. Sukses Selalu",
+        "CV Maju Mundur",
+        "PT. Marsha Lenathea Lapian",
+        "PT. Azizi Asadel",
+        "CV. Maju Bersama",
+        "PT. Cipta Karya",
+        "PT. Inovasi Abadi",
+        "PT. Sinar Harapan",
+        "CV. Gemilang Sejahtera"
+    ],
+    "trade_invoices": [
+        {
+            "id": 1,
+            "number": "INV-2026-08-010",
+            "date": "2026-11-02",
+            "customer": "PT. Marsha Lenathea Lapian",
+            "total_amount": 7000000,
+            "status": "Unpaid",
+            "hasTaxInvoice": false
+        },
+        {
+            "id": 2,
+            "number": "INV-2026-08-011",
+            "date": "2026-10-02",
+            "customer": "PT. Marsha Lenathea Lapian",
+            "total_amount": 7000000,
+            "status": "Partially Paid",
+            "hasTaxInvoice": true
+        },
+        {
+            "id": 3,
+            "number": "INV-2026-08-012",
+            "date": "2026-10-28",
+            "customer": "PT. Sukses Selalu",
+            "total_amount": 500000,
+            "status": "Unpaid",
+            "hasTaxInvoice": false
+        },
+        {
+            "id": 4,
+            "number": "INV-2026-08-013",
+            "date": "2026-10-18",
+            "customer": "CV Maju Mundur",
+            "total_amount": 2500000,
+            "status": "Paid",
+            "hasTaxInvoice": false
+        },
+        {
+            "id": 5,
+            "number": "INV-2026-08-014",
+            "date": "2026-10-28",
+            "customer": "PT. Cipta Karya",
+            "total_amount": 500000,
+            "status": "Paid",
+            "hasTaxInvoice": false
+        },
+        {
+            "id": 6,
+            "number": "INV-2026-08-015",
+            "date": "2026-11-15",
+            "customer": "CV Maju Mundur",
+            "total_amount": 10000000,
+            "status": "Partially Paid",
+            "hasTaxInvoice": false
+        }
+    ]
+}
