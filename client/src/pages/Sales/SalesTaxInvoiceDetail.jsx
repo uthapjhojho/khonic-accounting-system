@@ -7,6 +7,8 @@ import { formatDate, formatCurrency } from '../../utils/formatUtils';
 import SuccessModal from '../../components/Modals/SuccessModal';
 import nav from '../../constants/navigation.json';
 import statuses from '../../constants/statuses.json';
+import { Download, Pencil, XCircle } from 'lucide-react';
+import CancelInvoiceModal from '../../components/Modals/CancelInvoiceModal';
 
 const SalesTaxInvoiceDetail = () => {
     const navigate = useNavigate();
@@ -44,6 +46,10 @@ const SalesTaxInvoiceDetail = () => {
     if (!invoice) return <Layout><div className="p-8 text-red-500">Faktur pajak tidak ditemukan.</div></Layout>;
 
     const status = invoice.status;
+    const items = invoice.items || [];
+    const calculatedTotal = items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+    const calculatedDpp = Math.floor(calculatedTotal / 1.11);
+    const calculatedPpn = calculatedTotal - calculatedDpp;
 
     return (
         <Layout>
@@ -161,15 +167,15 @@ const SalesTaxInvoiceDetail = () => {
                     <div className="border-t border-gray-100 pt-8 space-y-4">
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-10 text-right text-sm font-bold text-gray-400 self-center">DPP</div>
-                            <div className="col-span-2 text-right text-gray-900 text-lg">Rp {parseFloat(invoice.dpp).toLocaleString('id-ID')}</div>
+                            <div className="col-span-2 text-right text-gray-900 text-lg">Rp {calculatedDpp.toLocaleString('id-ID')}</div>
                         </div>
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-10 text-right text-sm font-bold text-gray-400 self-center">PPN (11%)</div>
-                            <div className="col-span-2 text-right text-gray-900 text-lg">Rp {parseFloat(invoice.ppn).toLocaleString('id-ID')}</div>
+                            <div className="col-span-2 text-right text-gray-900 text-lg">Rp {calculatedPpn.toLocaleString('id-ID')}</div>
                         </div>
                         <div className="grid grid-cols-12 gap-4">
                             <div className="col-span-10 text-right text-sm font-black text-gray-500 self-center">Total</div>
-                            <div className="col-span-2 text-right font-black text-gray-900 text-xl tracking-tight">Rp {parseFloat(invoice.total).toLocaleString('id-ID')}</div>
+                            <div className="col-span-2 text-right font-black text-gray-900 text-xl tracking-tight">Rp {calculatedTotal.toLocaleString('id-ID')}</div>
                         </div>
                     </div>
 

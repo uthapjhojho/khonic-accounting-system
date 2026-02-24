@@ -8,6 +8,8 @@ import SuccessModal from '../../components/Modals/SuccessModal';
 import nav from '../../constants/navigation.json';
 import statuses from '../../constants/statuses.json';
 import mockData from '../../data/mockData.json';
+import { Download, Pencil, Eye, FileX } from 'lucide-react';
+import VoidInvoiceModal from '../../components/Modals/VoidInvoiceModal';
 
 const PurchaseTaxInvoiceDetail = () => {
     const navigate = useNavigate();

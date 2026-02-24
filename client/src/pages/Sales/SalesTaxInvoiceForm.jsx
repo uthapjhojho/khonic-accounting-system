@@ -60,8 +60,9 @@ const SalesTaxInvoiceForm = () => {
             const bbb = formatted.slice(4, 7);
             const yy = formatted.slice(8, 10);
             const allowedXXX = ['010', '020', '030', '040', '060', '070', '080', '090'];
-            const allowedBBB = ['000', '001', '002', '003'];
-            const currentYY = '26'; // Based on system time 2026
+            const allowedBBB = ['000', '001', '002', '003', '004', '005'];
+            const selectedYear = date ? new Date(date).getFullYear().toString().slice(-2) : '26';
+            const currentYY = selectedYear;
 
             const isXXXValid = allowedXXX.includes(xxx);
             const isBBBValid = allowedBBB.includes(bbb);
@@ -267,13 +268,6 @@ const SalesTaxInvoiceForm = () => {
         if (!taxNoValid || taxInvoiceNo.length < 19) return false;
         if (!selectedCustomer || !selectedInvoiceId || items.length === 0) return false;
 
-        // Ensure total matches selected invoice total if possible
-        const invoice = availableInvoices.find(inv => inv.id === parseInt(selectedInvoiceId));
-        if (invoice) {
-            const invTotal = parseFloat(invoice.total_amount);
-            if (Math.abs(total - invTotal) > 1) return false; // Use tolerance for float comparison
-        }
-
         return true;
     };
 
@@ -437,7 +431,7 @@ const SalesTaxInvoiceForm = () => {
                                         <input
                                             type="number"
                                             value={item.qty}
-                                            onChange={(e) => updateItem(item.id, 'qty', parseInt(e.target.value) || 0)}
+                                            onChange={(e) => updateItem(item.id, 'qty', parseFloat(e.target.value) || 0)}
                                             disabled={isEdit || isLinked}
                                             className={`w-full px-4 py-3 rounded-xl border border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-100 text-sm text-center font-bold bg-gray-50/50 ${(isEdit || isLinked) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         />

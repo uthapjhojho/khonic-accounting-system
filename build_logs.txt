@@ -1,0 +1,245 @@
+scheduling build on Metal builder "builder-zdnszj"
+fetched snapshot sha256:4cbbf6a9c291c3c7655c33b6700a126b713309ae9d2b3d0531b18745434cf8e6 (136 kB bytes)
+[INFO] fetching snapshot
+[INFO] unpacking archive
+using build driver nixpacks-v1.41.0
+
+╔══════════════════════════════ Nixpacks v1.41.0 ══════════════════════════════╗
+║ setup      │ nodejs_24, npm-9_x                                              ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ install    │ npm ci                                                          ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ build      │ npm install --include=dev && cd client && npm install           ║
+║            │ --include=dev && npm run build                                  ║
+║──────────────────────────────────────────────────────────────────────────────║
+║ start      │ npm start                                                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+Saved output to:
+  snapshot-target-unpack
+[INFO] [internal] load build definition from Dockerfile
+[INFO] [internal] load build definition from Dockerfile
+[INFO] [internal] load build definition from Dockerfile
+[INFO] [internal] load build definition from Dockerfile
+[INFO] [internal] load metadata for ghcr.io/railwayapp/nixpacks:ubuntu-1745885067
+[INFO] [internal] load metadata for ghcr.io/railwayapp/nixpacks:ubuntu-1745885067
+[INFO] [internal] load .dockerignore
+[INFO] [internal] load .dockerignore
+[INFO] [internal] load .dockerignore
+[INFO] [internal] load .dockerignore
+[WARN] UndefinedVar: Usage of undefined variable '$NIXPACKS_PATH' (line 18)(https://docs.docker.com/go/dockerfile/rule/undefined-var/)
+ details: Variables should be defined before their use
+
+[INFO] [stage-0 10/10] COPY . /app
+[INFO] [stage-0  9/10] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[INFO] [stage-0  8/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-node_modules/cache,target=/app/node_modules/.cache npm install --include=dev && cd client && npm install --include=dev && npm run build
+[INFO] [stage-0  7/10] COPY . /app/.
+[INFO] [stage-0  6/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-/root/npm,target=/root/.npm npm ci
+[INFO] [stage-0  5/10] COPY . /app/.
+[INFO] [stage-0  4/10] RUN nix-env -if .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix && nix-collect-garbage -d
+[INFO] [stage-0  3/10] COPY .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix
+[INFO] [internal] load build context
+[INFO] [stage-0  2/10] WORKDIR /app/
+[INFO] [stage-0  1/10] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+[INFO] [internal] load build context
+[INFO] [stage-0  1/10] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+[INFO] [internal] load build context
+[INFO] [stage-0  1/10] FROM ghcr.io/railwayapp/nixpacks:ubuntu-1745885067@sha256:d45c89d80e13d7ad0fd555b5130f22a866d9dd10e861f589932303ef2314c7de
+[INFO] [internal] load build context
+[INFO] [stage-0  2/10] WORKDIR /app/
+[INFO] [stage-0  3/10] COPY .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix
+[INFO] [stage-0  4/10] RUN nix-env -if .nixpacks/nixpkgs-23f9169c4ccce521379e602cc82ed873a1f1b52b.nix && nix-collect-garbage -d
+[INFO] [stage-0  5/10] COPY . /app/.
+[INFO] [stage-0  5/10] COPY . /app/.
+[INFO] [stage-0  6/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-/root/npm,target=/root/.npm npm ci
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+> khonic-accounting-system@1.0.0 postinstall
+> npm run install:all
+
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+> khonic-accounting-system@1.0.0 install:all
+> cd client && npm install && cd ../server && npm install
+
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+added 272 packages, and audited 273 packages in 3s
+
+56 packages are looking for funding
+
+[INFO]   run `npm fund` for details
+
+[INFO] 
+5 vulnerabilities (1 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+added 135 packages, and audited 136 packages in 707ms
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+[INFO] 
+2 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+[INFO] 
+added 25 packages, and audited 26 packages in 6s
+
+
+[INFO] 6 packages are looking for funding
+  run `npm fund` for details
+
+[INFO] 
+found 0 vulnerabilities
+
+[INFO] [stage-0  6/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-/root/npm,target=/root/.npm npm ci
+[INFO] [stage-0  7/10] COPY . /app/.
+[INFO] [stage-0  7/10] COPY . /app/.
+[INFO] [stage-0  8/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-node_modules/cache,target=/app/node_modules/.cache npm install --include=dev && cd client && npm install --include=dev && npm run build
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+> khonic-accounting-system@1.0.0 postinstall
+> npm run install:all
+
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+> khonic-accounting-system@1.0.0 install:all
+> cd client && npm install && cd ../server && npm install
+
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+up to date, audited 273 packages in 1s
+
+56 packages are looking for funding
+  run `npm fund` for details
+
+[INFO] 
+5 vulnerabilities (1 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+up to date, audited 136 packages in 657ms
+
+
+[INFO] 31 packages are looking for funding
+
+[INFO]   run `npm fund` for details
+
+[INFO] 
+2 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+[INFO] 
+up to date, audited 26 packages in 3s
+
+[INFO] 
+[INFO] 6 packages are looking for funding
+
+[INFO]   run `npm fund` for details
+
+[INFO] 
+found 0 vulnerabilities
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+up to date, audited 273 packages in 797ms
+
+56 packages are looking for funding
+
+[INFO]   run `npm fund` for details
+
+[INFO] 
+5 vulnerabilities (1 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+[INFO] npm warn config production Use `--omit=dev` instead.
+
+[INFO] 
+> client@0.0.0 build
+> vite build
+
+
+[INFO] [36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+
+[INFO] transforming...
+
+[INFO] [32m✓[39m 1813 modules transformed.
+
+[INFO] rendering chunks...
+
+[INFO] computing gzip size...
+
+[INFO] [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.45 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/[22m[2massets/[22m[35mindex-DjhxwbsK.css  [39m[1m[2m 35.72 kB[22m[1m[22m[2m │ gzip:   6.93 kB[22m
+[2mdist/[22m[2massets/[22m[36mindex-DoTbOYTC.js   [39m[1m[2m431.94 kB[22m[1m[22m[2m │ gzip: 119.20 kB[22m
+
+[INFO] [32m✓ built in 3.14s[39m
+
+[INFO] [stage-0  8/10] RUN --mount=type=cache,id=s/0c179c6d-ede0-496d-81a8-1ddc980c73a8-node_modules/cache,target=/app/node_modules/.cache npm install --include=dev && cd client && npm install --include=dev && npm run build
+[INFO] [stage-0  9/10] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[INFO] [stage-0  9/10] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[INFO] [stage-0 10/10] COPY . /app
+[INFO] [stage-0 10/10] COPY . /app
+[INFO] exporting to docker image format
+[INFO] exporting to docker image format
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6M2Y2ODdmMWE2MmM3MWI3OGQxMWY2NzQwYTU3OWUzMmFkNzE3YTM4YWRlMDZhMTY5NjJlMzI3OWI4NjE2ZTc2ZCIsInNpemUiOjI3NzAsImFubm90YXRpb25zIjp7Im9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjoiMjAyNi0wMi0yNFQwMzo0NTowN1oifSwicGxhdGZvcm0iOnsiYXJjaGl0ZWN0dXJlIjoiYW1kNjQiLCJvcyI6ImxpbnV4In19
+containerimage.config.digest: sha256:060cfa1ba4d7b8fe99b6662a5b3ea9db9d849fe6231a997d136eba9760f7b3e9
+containerimage.digest: sha256:3f687f1a62c71b78d11f6740a579e32ad717a38ade06a16962e3279b8616e76d
+
+[35m====================
+Starting Healthcheck
+====================
+[0m
+[37mPath: /api/health[0m
+[37mRetry window: 5m0s[0m
+
+[92m[1/1] Healthcheck succeeded![0m
+[INFO] image push
+[INFO] image push

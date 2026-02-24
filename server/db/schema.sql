@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS tax_invoices (
     dpp DECIMAL(15, 2) NOT NULL,
     ppn DECIMAL(15, 2) NOT NULL,
     total DECIMAL(15, 2) NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'Posted', 'Voided', 'Cancelled')),
+    status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'Issued', 'Posted', 'Voided', 'Cancelled', 'Canceled')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS purchase_tax_invoices (
     dpp DECIMAL(15, 2) NOT NULL,
     ppn DECIMAL(15, 2) NOT NULL,
     total DECIMAL(15, 2) NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'Posted', 'Voided', 'Cancelled')),
+    status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'Issued', 'Posted', 'Voided', 'Cancelled', 'Canceled')),
     file_path TEXT,
     grn_no TEXT,
     journal_id INTEGER REFERENCES journals(id) ON DELETE SET NULL,
@@ -181,7 +181,8 @@ INSERT INTO accounts (id, code, name, level, type, is_system, parent_id) VALUES
 ('211.000', '211.000', 'Utang Usaha', 2, 'Liabilities', true, '210.000'),
 ('300.000', '300.000', 'EKUITAS', 0, 'Equity', true, NULL),
 ('400.000', '400.000', 'PENDAPATAN', 0, 'Revenue', true, NULL),
-('500.000', '500.000', 'PENGELUARAN', 0, 'Expenses', true, NULL)
+('500.000', '500.000', 'PENGELUARAN', 0, 'Expenses', true, NULL),
+('700.000', '700.000', 'PENDAPATAN/BIAYA LAIN', 0, 'Revenue', true, NULL)
 ON CONFLICT (id) DO UPDATE SET 
     parent_id = EXCLUDED.parent_id,
     level = EXCLUDED.level,
@@ -196,7 +197,11 @@ INSERT INTO accounts (id, code, name, level, type, parent_id) VALUES
 ('121.000', '121.000', 'Tanah dan Bangunan', 2, 'Assets', '120.000'),
 ('122.000', '122.000', 'Kendaraan', 2, 'Assets', '120.000'),
 ('128.000', '128.000', 'Akumulasi Penyusutan', 2, 'Assets', '120.000'),
-('510.000', '510.000', 'Beban Gaji', 1, 'Expenses', '500.000')
+('510.000', '510.000', 'Beban Gaji', 1, 'Expenses', '500.000'),
+('701.001', '701.001', 'DISKON PENJUALAN BARANG DAGANGAN', 1, 'Revenue', '700.000'),
+('701.003', '701.003', 'DISKON PENJUALAN BARANG DAGANGAN BEBAN DISTRIBUTOR', 1, 'Revenue', '700.000'),
+('701.004', '701.004', 'DISKON PENJUALAN BARANG DAGANGAN DIKLAIM', 1, 'Revenue', '700.000'),
+('701.005', '701.005', 'DISKON PENJUALAN BARANG DAGANGAN KLAIM BEBAN DISTRIBUTOR', 1, 'Revenue', '700.000')
 ON CONFLICT (id) DO UPDATE SET 
     parent_id = EXCLUDED.parent_id;
 
