@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Search, ChevronDown, Plus, Minus, AlertCircle } from 'lucide-react';
-import customerService from '../../services/customerService';
-import invoiceService from '../../services/invoiceService';
-import discountService from '../../services/discountService';
-import { formatCurrency, formatDate } from '../../utils/formatUtils';
+import { formatCurrency, formatDate, formatNumber } from '../../utils/formatUtils';
 import SuccessModal from './SuccessModal';
+import discountsData from '../../data/discounts.json';
 // Discount account codes and names
 
 const RecordPaymentModal = ({ isOpen, onClose }) => {

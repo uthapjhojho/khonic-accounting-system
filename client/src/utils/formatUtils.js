@@ -30,6 +30,16 @@ export const formatCurrency = (amount) => {
 };
 
 /**
+ * Formats a number with ID-ID separators
+ * @param {number|string} num 
+ * @returns {string} formatted number
+ */
+export const formatNumber = (num) => {
+    if (num === null || num === undefined || num === '') return '0';
+    return new Intl.NumberFormat('id-ID').format(num);
+};
+
+/**
  * Gets the aging status text for a due date
  * @param {string|Date} dueDate 
  * @returns {object} { text, isOverdue }
