@@ -27,6 +27,10 @@ app.get('/api', (req, res) => {
     res.send('Khonic Accounting API is running (Modular)');
 });
 
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
@@ -38,10 +42,6 @@ app.get('*path', (req, res) => {
         return res.status(404).json({ error: 'API route not found' });
     }
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
-
-app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
 });
 
 app.listen(PORT, () => {
