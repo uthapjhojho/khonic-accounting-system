@@ -52,6 +52,7 @@ async function reset() {
                 SELECT id INTO cust_id_3 FROM customers WHERE name = 'PT. Marsha Lenathea Lapian' LIMIT 1;
                 SELECT id INTO cust_id_4 FROM customers WHERE name = 'PT. Azizi Asadel' LIMIT 1;
                 SELECT id INTO cust_id_7 FROM customers WHERE name = 'PT. Inovasi Abadi' LIMIT 1;
+                SELECT id INTO cust_id_9 FROM customers WHERE name = 'CV. Gemilang Sejahtera' LIMIT 1;
 
                 INSERT INTO invoices (customer_id, invoice_no, date, due_date, total_amount, paid_amount, status) VALUES
                 (cust_id_3, 'INV-2025-08-002', '2025-10-02', '2025-10-09', 7000000, 7000000, 'Paid'),
@@ -59,7 +60,11 @@ async function reset() {
                 (cust_id_1, 'INV-2025-08-009', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid'),
                 (cust_id_2, 'INV-2025-08-008', '2025-10-18', '2026-02-11', 2500000, 0, 'Unpaid'),
                 (cust_id_4, 'INV-2025-08-006', '2025-10-28', '2026-02-27', 500000, 0, 'Unpaid'),
-                (cust_id_7, 'INV-2025-08-003', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid')
+                (cust_id_7, 'INV-2025-08-003', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid'),
+                -- Gemilang Sejahtera Invoices for Tax Matching
+                (cust_id_9, 'INV-2025-09-003', '2025-09-03', '2025-09-10', 3561811, 0, 'Unpaid'),
+                (cust_id_9, 'INV-2025-09-004', '2025-09-04', '2025-09-11', 7049889, 0, 'Unpaid'),
+                (cust_id_9, 'INV-2025-09-005', '2025-09-05', '2025-09-12', 2423730, 0, 'Unpaid')
                 ON CONFLICT (invoice_no) DO NOTHING;
             END $$;
         `);
