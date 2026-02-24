@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 
@@ -22,8 +23,21 @@ app.use('/api/journals', journalRoutes);
 app.use('/api/sales', invoiceRoutes);
 app.use('/api/auth', authRoutes);
 
-app.get('/', (req, res) => {
-    res.send('Khonic Accounting Server is running (Modular)');
+app.get('/api', (req, res) => {
+    res.send('Khonic Accounting API is running (Modular)');
+});
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    // If request is for an API route that wasn't matched, send a 404
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
 app.get('/api/health', (req, res) => {
