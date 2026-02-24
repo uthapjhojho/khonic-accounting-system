@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
-import { Search, Plus, Filter, Download, MoreVertical, Eye, Edit, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Search, Plus, Filter, Download, MoreVertical, Eye, Edit, Trash2, CheckCircle, Clock, AlertCircle, Calendar, Pencil, X, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import taxInvoiceService from '../../services/taxInvoiceService';
 import { formatDate, formatCurrency } from '../../utils/formatUtils';

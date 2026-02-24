@@ -118,7 +118,7 @@ const Invoicing = () => {
                                         <div className="col-span-3 text-sm text-gray-900 font-medium">{inv.customer_name}</div>
                                         <div className="col-span-2 text-sm text-gray-400">{inv.invoice_no}</div>
                                         <div className="col-span-2 text-sm text-gray-900">{formatDate(inv.due_date)}</div>
-                                        <div className={`col - span - 3 text - sm ${aging.isOverdue ? 'text-red-500 font-bold' : 'text-gray-500'} `}>
+                                        <div className={`col-span-3 text-sm ${aging.isOverdue ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
                                             {aging.text}
                                         </div>
                                         <div className="col-span-2 text-right text-sm font-bold text-gray-900">{formatCurrency(remaining)}</div>

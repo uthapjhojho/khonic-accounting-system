@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import journalService from '../../services/journalService';
 import Layout from '../../components/Layout/Layout';
-import { Search, Plus, Filter, Download, MoreVertical, Eye, Edit, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { Search, Plus, Filter, Download, MoreVertical, Eye, Edit, Trash2, CheckCircle, Clock, Edit2, RefreshCw, AlertTriangle } from 'lucide-react';
 import nav from '../../constants/navigation.json';
 import PageHeader from '../../components/Layout/PageHeader';
 import { formatDate, formatCurrency } from '../../utils/formatUtils';
@@ -195,14 +195,14 @@ const GeneralJournalList = () => {
                             <div className="col-span-2 text-sm text-gray-500">{journal.number}</div>
                             <div className="col-span-5 text-sm font-medium text-gray-900">{journal.description}</div>
                             <div className="col-span-2">
-                                <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${getStatusColor(journal.status)} `}>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(journal.status)}`}>
                                     {journal.status}
                                 </span>
                             </div>
                             <div className="col-span-1 flex justify-center gap-1">
                                 {journal.status === 'Draft' ? (
                                     <Link
-                                        to={`/ jurnal - umum / edit / ${journal.id} `}
+                                        to={`/jurnal-umum/edit/${journal.id}`}
                                         className="p-1.5 rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
                                     >
                                         <Edit2 size={16} />
@@ -214,10 +214,10 @@ const GeneralJournalList = () => {
                                             setIsCancelModalOpen(true);
                                         }}
                                         disabled={journal.status !== 'Posted'}
-                                        className={`p - 1.5 rounded - full transition - colors ${journal.status !== 'Posted'
+                                        className={`p-1.5 rounded-full transition-colors ${journal.status !== 'Posted'
                                             ? 'bg-transparent text-gray-200 cursor-not-allowed'
                                             : 'hover:bg-gray-200 text-gray-400 hover:text-gray-600'
-                                            } `}
+                                            }`}
                                     >
                                         <RefreshCw size={16} />
                                     </button>
@@ -255,10 +255,10 @@ const GeneralJournalList = () => {
                             <button
                                 onClick={handleCancelJournal}
                                 disabled={!cancelReason.trim()}
-                                className={`w - full py - 4 rounded - 2xl font - bold transition - all shadow - sm ${!cancelReason.trim()
+                                className={`w-full py-4 rounded-2xl font-bold transition-all shadow-sm ${!cancelReason.trim()
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     : 'bg-[#D9534F] text-white hover:bg-[#C9302C]'
-                                    } `}
+                                    }`}
                             >
                                 Ya, Batalkan
                             </button>

@@ -9,7 +9,7 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [customers, setCustomers] = useState([]);
     const [accounts, setAccounts] = useState([]);
-    const [discounts, setDiscounts] = useState(discountsData);
+    const [discounts] = useState(discountsData);
     const [selectedCustomer, setSelectedCustomer] = useState('');
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
     const [invoices, setInvoices] = useState([]);
