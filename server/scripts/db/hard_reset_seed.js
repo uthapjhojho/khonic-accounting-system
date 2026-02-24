@@ -46,6 +46,7 @@ async function reset() {
                 cust_id_3 INT;
                 cust_id_4 INT;
                 cust_id_7 INT;
+                cust_id_9 INT;
             BEGIN
                 SELECT id INTO cust_id_1 FROM customers WHERE name = 'PT. Sukses Selalu' LIMIT 1;
                 SELECT id INTO cust_id_2 FROM customers WHERE name = 'CV Maju Mundur' LIMIT 1;
