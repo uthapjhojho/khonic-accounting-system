@@ -9,7 +9,11 @@ const getAllInvoices = async (req, res) => {
             JOIN customers c ON i.customer_id = c.id 
             ORDER BY i.due_date ASC
         `);
-        res.json(result.rows);
+        res.json(result.rows.map(row => ({
+            ...row,
+            due_date: row.due_date ? new Date(row.due_date).toISOString().split('T')[0] : null,
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : null
+        })));
     } catch (err) {
         console.error('Error in getAllInvoices:', err);
         res.status(500).json({ error: err.message });
@@ -23,7 +27,11 @@ const getInvoicesByCustomer = async (req, res) => {
             "SELECT * FROM invoices WHERE customer_id = $1 AND status != 'Paid' ORDER BY date DESC",
             [customerId]
         );
-        res.json(result.rows);
+        res.json(result.rows.map(row => ({
+            ...row,
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : null,
+            due_date: row.due_date ? new Date(row.due_date).toISOString().split('T')[0] : null
+        })));
     } catch (err) {
         console.error('Error in getInvoicesByCustomer:', err);
         res.status(500).json({ error: err.message });

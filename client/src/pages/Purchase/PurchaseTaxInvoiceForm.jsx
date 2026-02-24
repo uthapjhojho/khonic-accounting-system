@@ -34,8 +34,8 @@ const PurchaseTaxInvoiceForm = () => {
                 if (isEdit) {
                     const data = await taxInvoiceService.getPurchaseTaxInvoiceById(id);
                     setTaxInvoiceNo(data.tax_invoice_no);
-                    setTaxDate(data.date.split('T')[0]);
-                    setReceivedDate(data.received_date.split('T')[0]);
+                    setTaxDate(new Date(data.date).toISOString().split('T')[0]);
+                    setReceivedDate(new Date(data.received_date).toISOString().split('T')[0]);
                     setMasaPajak(data.masa_pajak);
                     setPoNumber(data.po_no);
                     setSupplierName(data.supplier_name);

@@ -10,7 +10,10 @@ const getAllTaxInvoices = async (req, res) => {
             JOIN invoices i ON ti.trade_invoice_id = i.id
             ORDER BY ti.date DESC
         `);
-        res.json(result.rows);
+        res.json(result.rows.map(row => ({
+            ...row,
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : null
+        })));
     } catch (err) {
         console.error('Error in getAllTaxInvoices:', err);
         res.status(500).json({ error: err.message });
@@ -32,7 +35,11 @@ const getAvailableTradeInvoices = async (req, res) => {
             AND i.status != 'Cancelled'
             ORDER BY i.date DESC
         `, [parseInt(customerId)]);
-        res.json(result.rows);
+        res.json(result.rows.map(row => ({
+            ...row,
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : null,
+            due_date: row.due_date ? new Date(row.due_date).toISOString().split('T')[0] : null
+        })));
     } catch (err) {
         console.error('Error in getAvailableTradeInvoices:', err);
         res.status(500).json({ error: err.message });
@@ -117,6 +124,7 @@ const getTaxInvoiceById = async (req, res) => {
         );
 
         const data = result.rows[0];
+        data.date = data.date ? new Date(data.date).toISOString().split('T')[0] : null;
         data.items = itemsResult.rows;
 
         res.json(data);
@@ -129,7 +137,11 @@ const getTaxInvoiceById = async (req, res) => {
 const getAllPurchaseTaxInvoices = async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM purchase_tax_invoices ORDER BY date DESC');
-        res.json(result.rows);
+        res.json(result.rows.map(row => ({
+            ...row,
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : null,
+            received_date: row.received_date ? new Date(row.received_date).toISOString().split('T')[0] : null
+        })));
     } catch (err) {
         console.error('Error in getAllPurchaseTaxInvoices:', err);
         res.status(500).json({ error: err.message });
@@ -151,6 +163,8 @@ const getPurchaseTaxInvoiceById = async (req, res) => {
         );
 
         const data = result.rows[0];
+        data.date = data.date ? new Date(data.date).toISOString().split('T')[0] : null;
+        data.received_date = data.received_date ? new Date(data.received_date).toISOString().split('T')[0] : null;
         data.items = itemsResult.rows;
 
         res.json(data);

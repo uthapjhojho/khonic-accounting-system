@@ -11,7 +11,7 @@ const getAllJournals = async (req, res) => {
 
         const journalsWithLines = journals.map(journal => ({
             ...journal,
-            date: new Date(journal.date).toLocaleDateString('en-GB'),
+            date: new Date(journal.date).toISOString().split('T')[0],
             lines: allLines.filter(line => line.journal_id === journal.id)
         }));
 
@@ -34,15 +34,9 @@ const getJournalById = async (req, res) => {
         const journal = journalResult.rows[0];
         const linesResult = await db.query('SELECT * FROM journal_lines WHERE journal_id = $1', [id]);
 
-        const dateObj = new Date(journal.date);
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-
         res.json({
             ...journal,
-            date: formattedDate,
+            date: new Date(journal.date).toISOString().split('T')[0],
             lines: linesResult.rows.map(line => ({
                 id: line.id,
                 account: line.account_id,

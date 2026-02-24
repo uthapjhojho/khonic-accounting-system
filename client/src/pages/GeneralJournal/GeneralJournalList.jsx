@@ -82,18 +82,11 @@ const GeneralJournalList = () => {
         }
     }, [notification, location.state]);
 
-    // Helper to parse DD/MM/YYYY
-    const parseDate = (dateStr) => {
-        if (!dateStr || typeof dateStr !== 'string') return new Date(0);
-
-        // Handle YYYY-MM-DD from some entries if they exist
-        if (dateStr.includes('-')) return new Date(dateStr);
-
-        const parts = dateStr.split('/');
-        if (parts.length !== 3) return new Date(0);
-
-        const [day, month, year] = parts.map(p => parseInt(p));
-        return new Date(year, month - 1, day);
+    // Helper to parse date consistently
+    const parseDate = (dateVal) => {
+        if (!dateVal) return new Date(0);
+        const date = new Date(dateVal);
+        return isNaN(date.getTime()) ? new Date(0) : date;
     };
 
     // Sort and filter journals
@@ -191,7 +184,7 @@ const GeneralJournalList = () => {
                 <div className="divide-y divide-gray-100">
                     {journals.map((journal) => (
                         <div key={journal.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                            <div className="col-span-1 text-sm text-gray-900 font-medium">{formatDate(journal.date)}</div>
+                            <div className="col-span-2 text-sm text-gray-900 font-medium">{formatDate(journal.date)}</div>
                             <div className="col-span-2 text-sm text-gray-500">{journal.number}</div>
                             <div className="col-span-5 text-sm font-medium text-gray-900">{journal.description}</div>
                             <div className="col-span-2">

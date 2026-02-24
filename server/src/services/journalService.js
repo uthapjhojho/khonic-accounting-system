@@ -108,8 +108,11 @@ const updateJournal = async (id, journalData) => {
         let headerParams = [description, status, cancel_reason];
 
         if (date) {
-            const [day, month, year] = date.split('/');
-            const pgDate = `${year}-${month}-${day}`;
+            let pgDate = date;
+            if (typeof date === 'string' && date.includes('/')) {
+                const [day, month, year] = date.split('/');
+                pgDate = `${year}-${month}-${day}`;
+            }
             headerQuery += ', date = $4 WHERE id = $5';
             headerParams.push(pgDate, id);
         } else {

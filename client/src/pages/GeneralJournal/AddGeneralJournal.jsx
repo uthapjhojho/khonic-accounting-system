@@ -6,6 +6,7 @@ import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
 import nav from '../../constants/navigation.json';
 import { formatDate, formatCurrency } from '../../utils/formatUtils';
+import { ChevronDown, Trash2, Plus } from 'lucide-react';
 
 const dummyInvoices = Array.from({ length: 20 }, (_, i) => ({
     id: `INV-2026-02-${String(i + 1).padStart(3, '0')}`,
@@ -94,11 +95,8 @@ const AddGeneralJournal = () => {
         if (status === 'Posted' && !isFormValid) return;
 
         try {
-            const [year, month, day] = dueDate.split('-');
-            const formattedDate = `${day}/${month}/${year}`;
-
             await journalService.createJournal({
-                date: formattedDate,
+                date: dueDate,
                 description,
                 status,
                 lines: lines

@@ -155,7 +155,7 @@ const SalesTaxInvoiceForm = () => {
             try {
                 const data = await taxInvoiceService.getTaxInvoiceById(id);
                 setTaxInvoiceNo(data.tax_invoice_no);
-                setDate(data.date.split('T')[0]);
+                setDate(new Date(data.date).toISOString().split('T')[0]);
                 setMasaPajak(data.masa_pajak);
                 setSelectedCustomer(data.customer_id);
                 setSelectedInvoiceId(data.trade_invoice_id);
