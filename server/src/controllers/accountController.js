@@ -2,6 +2,15 @@ const db = require('../config/db');
 
 const getAllAccounts = async (req, res) => {
     try {
+        // Single Source of Truth: 
+        // Sync Piutang Usaha (112.000) balance directly from outstanding invoices 
+        // to ensure the Ledger and Dashboard are always perfectly in sync.
+        await db.query(`
+            UPDATE accounts 
+            SET balance = (SELECT COALESCE(SUM(total_amount - paid_amount), 0) FROM invoices)
+            WHERE id = '112.000'
+        `);
+
         const result = await db.query(`
             SELECT a.*, 
             EXISTS(SELECT 1 FROM accounts b WHERE b.parent_id = a.id AND b.status = 'Active') as has_children
