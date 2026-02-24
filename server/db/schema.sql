@@ -179,7 +179,7 @@ INSERT INTO accounts (id, code, name, level, type, is_system, parent_id) VALUES
 ('200.000', '200.000', 'KEWAJIBAN', 0, 'Liabilities', true, NULL),
 ('210.000', '210.000', 'KEWAJIBAN LANCAR', 1, 'Liabilities', true, '200.000'),
 ('211.000', '211.000', 'Utang Usaha', 2, 'Liabilities', true, '210.000'),
-('212.000', '212.000', 'Titipan Pelanggan', 2, 'Liabilities', true, '210.000'),
+('212.000', '212.000', 'Uang Muka Pelanggan', 2, 'Liabilities', true, '210.000'),
 ('300.000', '300.000', 'EKUITAS', 0, 'Equity', true, NULL),
 ('400.000', '400.000', 'PENDAPATAN', 0, 'Revenue', true, NULL),
 ('500.000', '500.000', 'PENGELUARAN', 0, 'Expenses', true, NULL),
