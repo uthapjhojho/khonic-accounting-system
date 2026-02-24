@@ -222,11 +222,26 @@ INSERT INTO discounts (code, name, percentage) VALUES
 ON CONFLICT (code) DO UPDATE SET percentage = EXCLUDED.percentage;
 
 -- Seed Invoices
-INSERT INTO invoices (customer_id, invoice_no, date, due_date, total_amount, paid_amount, status) VALUES
-(3, 'INV-2025-08-002', '2025-10-02', '2025-10-09', 7000000, 700000, 'Partially Paid'),
-(3, 'INV-2025-08-001', '2025-11-02', '2025-11-09', 7000000, 0, 'Unpaid'),
-(1, 'INV-2025-08-009', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid'),
-(2, 'INV-2025-08-008', '2025-10-18', '2026-02-11', 2500000, 0, 'Unpaid'),
-(4, 'INV-2025-08-006', '2025-10-28', '2026-02-27', 500000, 0, 'Unpaid'),
-(7, 'INV-2025-08-003', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid')
-ON CONFLICT (invoice_no) DO NOTHING;
+DO $$
+DECLARE
+    cust_id_1 INT;
+    cust_id_2 INT;
+    cust_id_3 INT;
+    cust_id_4 INT;
+    cust_id_7 INT;
+BEGIN
+    SELECT id INTO cust_id_1 FROM customers WHERE name = 'PT. Sukses Selalu';
+    SELECT id INTO cust_id_2 FROM customers WHERE name = 'CV Maju Mundur';
+    SELECT id INTO cust_id_3 FROM customers WHERE name = 'PT. Marsha Lenathea Lapian';
+    SELECT id INTO cust_id_4 FROM customers WHERE name = 'PT. Azizi Asadel';
+    SELECT id INTO cust_id_7 FROM customers WHERE name = 'PT. Inovasi Abadi';
+
+    INSERT INTO invoices (customer_id, invoice_no, date, due_date, total_amount, paid_amount, status) VALUES
+    (cust_id_3, 'INV-2025-08-002', '2025-10-02', '2025-10-09', 7000000, 700000, 'Partially Paid'),
+    (cust_id_3, 'INV-2025-08-001', '2025-11-02', '2025-11-09', 7000000, 0, 'Unpaid'),
+    (cust_id_1, 'INV-2025-08-009', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid'),
+    (cust_id_2, 'INV-2025-08-008', '2025-10-18', '2026-02-11', 2500000, 0, 'Unpaid'),
+    (cust_id_4, 'INV-2025-08-006', '2025-10-28', '2026-02-27', 500000, 0, 'Unpaid'),
+    (cust_id_7, 'INV-2025-08-003', '2025-10-28', '2026-02-21', 500000, 0, 'Unpaid')
+    ON CONFLICT (invoice_no) DO NOTHING;
+END $$;
