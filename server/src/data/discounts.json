@@ -1,0 +1,22 @@
+[
+    {
+        "code": "701.001",
+        "name": "DISKON PENJUALAN BARANG DAGANGAN",
+        "percentage": 10
+    },
+    {
+        "code": "701.003",
+        "name": "DISKON PENJUALAN BARANG DAGANGAN BEBAN DISTRIBUTOR",
+        "percentage": 15
+    },
+    {
+        "code": "701.004",
+        "name": "DISKON PENJUALAN BARANG DAGANGAN DIKLAIM",
+        "percentage": 20
+    },
+    {
+        "code": "701.005",
+        "name": "DISKON PENJUALAN BARANG DAGANGAN KLAIM BEBAN DISTRIBUTOR",
+        "percentage": 5
+    }
+]

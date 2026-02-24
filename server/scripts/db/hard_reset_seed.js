@@ -14,12 +14,19 @@ async function reset() {
         await client.query('UPDATE accounts SET balance = 0');
         console.log('All account balances reset to 0.');
 
-        console.log('\n--- Enforcing Uniqueness ---');
+        console.log('\n--- Enforcing Uniqueness & Constraints ---');
         await client.query(`
             ALTER TABLE customers DROP CONSTRAINT IF EXISTS unique_customer_name;
             ALTER TABLE customers ADD CONSTRAINT unique_customer_name UNIQUE (name);
+
+            -- Enforce updated status constraints for Tax Invoices
+            ALTER TABLE tax_invoices DROP CONSTRAINT IF EXISTS tax_invoices_status_check;
+            ALTER TABLE tax_invoices ADD CONSTRAINT tax_invoices_status_check CHECK (status IN ('Draft', 'Issued', 'Posted', 'Voided', 'Cancelled', 'Canceled'));
+
+            ALTER TABLE purchase_tax_invoices DROP CONSTRAINT IF EXISTS purchase_tax_invoices_status_check;
+            ALTER TABLE purchase_tax_invoices ADD CONSTRAINT purchase_tax_invoices_status_check CHECK (status IN ('Draft', 'Issued', 'Posted', 'Voided', 'Cancelled', 'Canceled'));
         `);
-        console.log('Unique constraint applied to customers.name.');
+        console.log('Unique constraints and status checks applied.');
 
         console.log('\n--- Reseeding Customers ---');
         await client.query(`

@@ -49,7 +49,7 @@ const recordPayment = async (req, res) => {
         // 0. Fetch discount percentage if applicable
         let discountPercent = 0;
         if (discountCode) {
-            const discounts = require('../../../client/src/data/discounts.json');
+            const discounts = require('../data/discounts.json');
             const d = discounts.find(item => item.code === discountCode);
             if (d) discountPercent = parseFloat(d.percentage) || 0;
         }
