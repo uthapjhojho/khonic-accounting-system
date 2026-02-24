@@ -36,13 +36,13 @@ app.get('/api/health', (req, res) => {
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('(.*)', (req, res) => {
-    // If request is for an API route that wasn't matched, send a 404
-    if (req.path.startsWith('/api')) {
-        return res.status(404).json({ error: 'API route not found' });
+// match an API route or a static file, send back React's index.html file.
+app.use((req, res, next) => {
+    // Only handle GET requests that don't start with /api
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        return res.sendFile(path.join(__dirname, '../client/dist/index.html'));
     }
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    next();
 });
 
 const db = require('./src/config/db');
