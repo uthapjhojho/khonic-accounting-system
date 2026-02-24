@@ -202,7 +202,7 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none appearance-none bg-white"
                                 >
                                     <option value="">Pilih pelanggan</option>
-                                    {Array.from(new Map(customers.map(c => [c.name, c])).values()).map(customer => (
+                                    {customers.map(customer => (
                                         <option key={customer.id} value={customer.id}>{customer.name}</option>
                                     ))}
                                 </select>
