@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
 import RecordPaymentModal from '../../components/Modals/RecordPaymentModal';
-import { Search, Plus, BarChart2, FileText } from 'lucide-react';
+import { Search, Plus, FileText, AlertCircle, BarChart2 } from 'lucide-react';
+import invoiceService from '../../services/invoiceService';
+import { formatCurrency, formatDate, getAgingStatus } from '../../utils/formatUtils';
 
 const Invoicing = () => {
     const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -29,46 +31,10 @@ const Invoicing = () => {
         }
     };
 
-    const getAgingStatus = (dueDate) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const due = new Date(dueDate);
-        due.setHours(0, 0, 0, 0);
-
-        const diffTime = due - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays < 0) {
-            return {
-                text: `Terlambat ${Math.abs(diffDays)} hari`,
-                isOverdue: true
-            };
-        } else if (diffDays === 0) {
-            return {
-                text: 'Jatuh tempo hari ini',
-                isOverdue: true
-            };
-        } else {
-            return {
-                text: `Jatuh tempo ${diffDays} hari lagi`,
-                isOverdue: false
-            };
-        }
-    };
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(amount).replace('Rp', 'Rp');
-    };
-
     const totalPiutang = Math.round(invoices.reduce((sum, inv) => sum + (parseFloat(inv.total_amount) - parseFloat(inv.paid_amount)), 0));
     const totalJatuhTempo = Math.round(invoices.reduce((sum, inv) => {
-        const aging = getAgingStatus(inv.due_date);
-        if (aging.isOverdue) {
+        const agingInfo = getAgingStatus(inv.due_date);
+        if (agingInfo.isOverdue) {
             return sum + (parseFloat(inv.total_amount) - parseFloat(inv.paid_amount));
         }
         return sum;
@@ -151,8 +117,8 @@ const Invoicing = () => {
                                     <div key={idx} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
                                         <div className="col-span-3 text-sm text-gray-900 font-medium">{inv.customer_name}</div>
                                         <div className="col-span-2 text-sm text-gray-400">{inv.invoice_no}</div>
-                                        <div className="col-span-2 text-sm text-gray-900">{new Date(inv.due_date).toLocaleDateString('id-ID')}</div>
-                                        <div className={`col-span-3 text-sm ${aging.isOverdue ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                        <div className="col-span-2 text-sm text-gray-900">{formatDate(inv.due_date)}</div>
+                                        <div className={`col - span - 3 text - sm ${aging.isOverdue ? 'text-red-500 font-bold' : 'text-gray-500'} `}>
                                             {aging.text}
                                         </div>
                                         <div className="col-span-2 text-right text-sm font-bold text-gray-900">{formatCurrency(remaining)}</div>

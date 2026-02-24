@@ -18,5 +18,30 @@
         "code": "LP-004",
         "label": "LP-004 — INV-2025-08-009 (PT. Sukses Selalu)",
         "tax_invoice_no": "010.002-26.44444444"
+    },
+    {
+        "code": "LP-005",
+        "label": "LP-005 — INV-2025-08-002 (PT. Marsha Lenathea Lapian)",
+        "tax_invoice_no": "010.001-26.55555555"
+    },
+    {
+        "code": "LP-006",
+        "label": "LP-006 — INV-2025-08-001 (PT. Marsha Lenathea Lapian)",
+        "tax_invoice_no": "010.001-26.66666666"
+    },
+    {
+        "code": "LP-007",
+        "label": "LP-007 — INV-2025-08-008 (CV Maju Mundur)",
+        "tax_invoice_no": "010.002-26.77777777"
+    },
+    {
+        "code": "LP-008",
+        "label": "LP-008 — INV-2025-08-003 (PT. Inovasi Abadi)",
+        "tax_invoice_no": "010.001-26.88888888"
+    },
+    {
+        "code": "LP-009",
+        "label": "LP-009 — INV-2025-08-006 (PT. Azizi Asadel)",
+        "tax_invoice_no": "010.001-26.99999999"
     }
 ]

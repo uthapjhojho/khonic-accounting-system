@@ -206,7 +206,7 @@ const PurchaseTaxInvoiceForm = () => {
                         {/* Data PO Section */}
                         <div className="space-y-6">
                             <h3 className="font-bold text-gray-900 text-lg">Data PO</h3>
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-3 gap-8">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-900 mb-3">
                                         <span className="text-red-500">* </span>Purchase Order (PO)
@@ -220,7 +220,9 @@ const PurchaseTaxInvoiceForm = () => {
                                         >
                                             <option value="">Pilih PO</option>
                                             {Object.keys(poData).map(po => (
-                                                <option key={po} value={po}>{po}</option>
+                                                <option key={po} value={po}>
+                                                    {po} {poData[po].supplier}
+                                                </option>
                                             ))}
                                         </select>
                                         {!isEdit && <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />}
@@ -234,6 +236,16 @@ const PurchaseTaxInvoiceForm = () => {
                                         readOnly
                                         className="w-full px-4 py-3 rounded-xl border border-transparent bg-gray-50 text-gray-400 focus:outline-none text-sm font-medium"
                                         placeholder="Nama Supplier"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-900 mb-3">Nomor PO</label>
+                                    <input
+                                        type="text"
+                                        value={poNumber}
+                                        disabled
+                                        className="w-full px-4 py-3 rounded-xl border border-transparent bg-gray-50 text-gray-400 focus:outline-none text-sm font-medium cursor-not-allowed"
+                                        placeholder="PO - 000"
                                     />
                                 </div>
                             </div>

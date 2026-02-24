@@ -88,5 +88,80 @@
             }
         ],
         "total": 500000
+    },
+    "010.001-26.55555555": {
+        "customer_name": "PT. Marsha Lenathea Lapian",
+        "trade_invoice_no": "INV-2025-08-002",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Audit Fee - Tahunan",
+                "qty": 1,
+                "price": 7000000,
+                "total": 7000000
+            }
+        ],
+        "total": 7000000
+    },
+    "010.001-26.66666666": {
+        "customer_name": "PT. Marsha Lenathea Lapian",
+        "trade_invoice_no": "INV-2025-08-001",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Jasa Konsultasi Perpajakan",
+                "qty": 1,
+                "price": 7000000,
+                "total": 7000000
+            }
+        ],
+        "total": 7000000
+    },
+    "010.002-26.77777777": {
+        "customer_name": "CV Maju Mundur",
+        "trade_invoice_no": "INV-2025-08-008",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Pembersihan Area Kantor",
+                "qty": 1,
+                "price": 2500000,
+                "total": 2500000
+            }
+        ],
+        "total": 2500000
+    },
+    "010.001-26.88888888": {
+        "customer_name": "PT. Inovasi Abadi",
+        "trade_invoice_no": "INV-2025-08-003",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Pengadaan Alat Tulis Kantor",
+                "qty": 1,
+                "price": 500000,
+                "total": 500000
+            }
+        ],
+        "total": 500000
+    },
+    "010.001-26.99999999": {
+        "customer_name": "PT. Azizi Asadel",
+        "trade_invoice_no": "INV-2025-08-006",
+        "date": "2026-02-23",
+        "masa_pajak": "02/26",
+        "items": [
+            {
+                "name": "Jasa Keamanan Outsourcing",
+                "qty": 1,
+                "price": 500000,
+                "total": 500000
+            }
+        ],
+        "total": 500000
     }
 }

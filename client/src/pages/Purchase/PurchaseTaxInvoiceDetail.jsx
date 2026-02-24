@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
-import { Download, Eye, FileX, Pencil, XCircle } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import taxInvoiceService from '../../services/taxInvoiceService';
-import VoidInvoiceModal from '../../components/Modals/VoidInvoiceModal';
+import { formatDate, formatCurrency } from '../../utils/formatUtils';
+import SuccessModal from '../../components/Modals/SuccessModal';
 import nav from '../../constants/navigation.json';
 import statuses from '../../constants/statuses.json';
 import mockData from '../../data/mockData.json';
@@ -115,7 +115,7 @@ const PurchaseTaxInvoiceDetail = () => {
                         <div className="grid grid-cols-3 gap-x-12 pb-6 border-b border-gray-100">
                             <div>
                                 <div className="text-[13px] font-bold text-gray-900 mb-2">Tanggal Faktur</div>
-                                <div className="text-sm text-gray-700">{new Date(invoice.date).toLocaleDateString('id-ID')}</div>
+                                <p className="text-sm font-medium text-gray-900">{formatDate(invoice.date)}</p>
                             </div>
                             <div>
                                 <div className="text-[13px] font-bold text-gray-900 mb-2">Masa Pajak</div>
@@ -123,7 +123,7 @@ const PurchaseTaxInvoiceDetail = () => {
                             </div>
                             <div>
                                 <div className="text-[13px] font-bold text-gray-900 mb-2">Tanggal Terima</div>
-                                <div className="text-sm text-gray-700">{invoice.received_date ? new Date(invoice.received_date).toLocaleDateString('id-ID') : '-'}</div>
+                                <div className="text-sm text-gray-700">{formatDate(invoice.received_date)}</div>
                             </div>
                         </div>
 

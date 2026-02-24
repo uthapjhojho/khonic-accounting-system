@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Calendar, ChevronDown, Minus } from 'lucide-react';
+import { X, Check, Search, ChevronDown, Plus, Minus, AlertCircle } from 'lucide-react';
+import customerService from '../../services/customerService';
+import invoiceService from '../../services/invoiceService';
+import discountService from '../../services/discountService';
+import { formatCurrency, formatDate } from '../../utils/formatUtils';
 import SuccessModal from './SuccessModal';
-import discountsData from '../../data/discounts.json'; // Discount account codes and names
+// Discount account codes and names
 
 const RecordPaymentModal = ({ isOpen, onClose }) => {
     const [showSuccess, setShowSuccess] = useState(false);
@@ -89,15 +93,6 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
     const handleAllocationChange = (id, value) => {
         const cleanValue = value.replace(/[^0-9]/g, '');
         setAllocations(prev => ({ ...prev, [id]: cleanValue }));
-    };
-
-    const formatNumber = (num) => {
-        if (!num) return '0';
-        return new Intl.NumberFormat('id-ID').format(num);
-    };
-
-    const formatCurrency = (num) => {
-        return 'Rp' + formatNumber(num);
     };
 
     const getDiscountedAmount = (amount) => {
@@ -297,7 +292,7 @@ const RecordPaymentModal = ({ isOpen, onClose }) => {
                                                 </button>
                                             </div>
                                             <div className="col-span-4 text-sm font-bold text-gray-900">
-                                                {inv.invoice_no} ({new Date(inv.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')})
+                                                {inv.invoice_no} ({formatDate(inv.date)})
                                             </div>
                                             <div className="col-span-3 text-right text-sm font-bold text-gray-900">
                                                 {formatCurrency(sisaTagihan)}

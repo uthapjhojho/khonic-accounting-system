@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
-import { Search, Plus, Calendar, ChevronDown, Pencil, X, Eye } from 'lucide-react';
+import { Search, Plus, Filter, Download, MoreVertical, Eye, Edit, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import taxInvoiceService from '../../services/taxInvoiceService';
+import { formatDate, formatCurrency } from '../../utils/formatUtils';
 import customerService from '../../services/customerService';
 import CancelInvoiceModal from '../../components/Modals/CancelInvoiceModal';
 import nav from '../../constants/navigation.json';
@@ -181,7 +182,7 @@ const SalesTaxInvoice = () => {
                                 className="grid grid-cols-12 gap-4 px-8 py-4 items-center hover:bg-gray-50/50 transition-colors cursor-pointer group"
                             >
                                 <div className="col-span-3 text-sm text-gray-400 font-medium tracking-tight font-mono uppercase">{invoice.tax_invoice_no}</div>
-                                <div className="col-span-1 text-sm text-gray-900">{new Date(invoice.date).toLocaleDateString('id-ID')}</div>
+                                <div className="col-span-1 text-sm text-gray-900 font-medium">{formatDate(invoice.date)}</div>
                                 <div className="col-span-2 text-sm text-gray-700 font-medium">{invoice.customer_name}</div>
                                 <div className="col-span-2 text-sm text-right text-gray-500 font-medium">Rp {parseFloat(invoice.dpp).toLocaleString('id-ID')}</div>
                                 <div className="col-span-1 text-sm text-right text-gray-500 font-medium">Rp {parseFloat(invoice.ppn).toLocaleString('id-ID')}</div>

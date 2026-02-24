@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
-import { Search, Plus, Eye } from 'lucide-react';
+import { Search, Plus, Calendar, ChevronDown, Pencil, X, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import taxInvoiceService from '../../services/taxInvoiceService';
+import { formatDate, formatCurrency } from '../../utils/formatUtils';
 import nav from '../../constants/navigation.json';
 import statuses from '../../constants/statuses.json';
 
@@ -85,8 +86,8 @@ const PurchaseTaxInvoice = () => {
                                     onClick={() => navigate(`/faktur-pajak-pembelian/detail/${invoice.id}`)}
                                 >
                                     <div className="col-span-3 text-sm text-gray-400 font-medium tracking-tight font-mono uppercase">{invoice.tax_invoice_no}</div>
-                                    <div className="col-span-2 text-sm text-gray-900">{new Date(invoice.date).toLocaleDateString('id-ID')}</div>
-                                    <div className="col-span-2 text-sm text-gray-700 font-medium">{invoice.supplier_name}</div>
+                                    <div className="col-span-1 text-sm text-gray-900 font-medium">{formatDate(invoice.date)}</div>
+                                    <div className="col-span-3 text-sm text-gray-700 font-medium">{invoice.supplier_name}</div>
                                     <div className="col-span-2 text-sm text-gray-500 font-medium">{invoice.po_no}</div>
                                     <div className="col-span-1 text-sm text-right font-black text-gray-900">Rp {parseFloat(invoice.total).toLocaleString('id-ID')}</div>
                                     <div className="col-span-1 flex justify-center">

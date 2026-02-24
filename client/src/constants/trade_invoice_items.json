@@ -76,5 +76,29 @@
             "price": 500000,
             "total": 500000
         }
+    ],
+    "INV-2025-08-001": [
+        {
+            "name": "Jasa Konsultasi Perpajakan",
+            "qty": 1,
+            "price": 7000000,
+            "total": 7000000
+        }
+    ],
+    "INV-2025-08-002": [
+        {
+            "name": "Audit Fee - Tahunan",
+            "qty": 1,
+            "price": 7000000,
+            "total": 7000000
+        }
+    ],
+    "INV-2025-08-003": [
+        {
+            "name": "Pengadaan Alat Tulis Kantor",
+            "qty": 1,
+            "price": 500000,
+            "total": 500000
+        }
     ]
 }

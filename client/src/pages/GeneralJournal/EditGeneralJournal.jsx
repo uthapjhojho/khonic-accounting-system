@@ -4,8 +4,8 @@ import accountService from '../../services/accountService';
 import journalService from '../../services/journalService';
 import Layout from '../../components/Layout/Layout';
 import PageHeader from '../../components/Layout/PageHeader';
-import { Trash2, Plus, ChevronDown, CheckCircle } from 'lucide-react';
 import nav from '../../constants/navigation.json';
+import { formatDate, formatCurrency } from '../../utils/formatUtils';
 
 const dummyInvoices = Array.from({ length: 20 }, (_, i) => ({
     id: `INV-2026-02-${String(i + 1).padStart(3, '0')}`,
@@ -293,11 +293,11 @@ const EditGeneralJournal = () => {
                     <div className="mt-8 border-t border-gray-100 pt-6 flex flex-col items-end gap-3">
                         <div className="flex items-center gap-12 text-sm">
                             <span className="text-gray-400 font-medium">Total Debit :</span>
-                            <span className="font-bold text-gray-900 text-lg">Rp{totalDebit.toLocaleString('id-ID')}</span>
+                            <span className="font-bold text-gray-900 text-lg">{formatCurrency(totalDebit)}</span>
                         </div>
                         <div className="flex items-center gap-12 text-sm">
                             <span className="text-gray-400 font-medium">Total Kredit :</span>
-                            <span className="font-bold text-gray-900 text-lg">Rp{totalCredit.toLocaleString('id-ID')}</span>
+                            <span className="font-bold text-gray-900 text-lg">{formatCurrency(totalCredit)}</span>
                         </div>
                     </div>
                 </div>

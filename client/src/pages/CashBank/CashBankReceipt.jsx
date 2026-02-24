@@ -5,6 +5,7 @@ import nav from '../../constants/navigation.json';
 import accountService from '../../services/accountService';
 import journalService from '../../services/journalService';
 import cashBankService from '../../services/cashBankService';
+import { formatDate, formatCurrency } from '../../utils/formatUtils';
 import PageHeader from '../../components/Layout/PageHeader';
 
 const CashBankReceipt = () => {
@@ -254,7 +255,7 @@ const CashBankReceipt = () => {
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rp</span>
                                 <input
                                     type="text"
-                                    value={formatRupiah(totalAmount)}
+                                    value={formatCurrency(totalAmount)}
                                     className="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-100 bg-gray-50/50 text-gray-400 focus:outline-none text-sm font-medium"
                                     readOnly
                                 />
@@ -358,7 +359,7 @@ const CashBankReceipt = () => {
 
                         <div className="mt-8 pt-6 border-t border-gray-50 flex justify-end items-center gap-4">
                             <span className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Total Diterima :</span>
-                            <span className="font-medium text-gray-900 text-2xl tracking-tight">Rp {formatRupiah(totalAmount)}</span>
+                            <span className="font-medium text-gray-900 text-2xl tracking-tight">{formatCurrency(totalAmount)}</span>
                         </div>
                     </div>
 
