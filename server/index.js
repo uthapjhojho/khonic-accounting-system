@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
     // If request is for an API route that wasn't matched, send a 404
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'API route not found' });
