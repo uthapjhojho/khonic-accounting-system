@@ -54,42 +54,65 @@ const recordPayment = async (req, res) => {
             if (d) discountPercent = parseFloat(d.percentage) || 0;
         }
 
-        let totalAllocated = 0;
-        let totalDiscountExpense = 0;
-        let totalOverpaid = 0;
+        let totalCashReceived = 0;
+        let totalDiscountUsed = 0;
+        let totalLogicalUsed = 0;
+        let totalCashExcess = 0;
 
         for (const allocation of allocations) {
             const { invoiceId, amount } = allocation;
-            const cashAmount = parseFloat(amount);
+            const cashAmount = parseFloat(amount) || 0;
+            totalCashReceived += cashAmount;
 
             // 1. Fetch current invoice state
-            const invResult = await client.query('SELECT total_amount, paid_amount FROM invoices WHERE id = $1', [invoiceId]);
+            const invResult = await client.query('SELECT total_amount, paid_amount, invoice_no FROM invoices WHERE id = $1', [invoiceId]);
+            if (invResult.rows.length === 0) continue;
+
             const invoice = invResult.rows[0];
+            const currentOutstanding = Math.max(0, parseFloat(invoice.total_amount) - parseFloat(invoice.paid_amount));
 
-            const currentOutstanding = parseFloat(invoice.total_amount) - parseFloat(invoice.paid_amount);
-
-            // Logical Payment = Cash + (Cash * (Discount% / (100 - Discount%)))
-            // If Cash is 80 and Discount is 20%, Logical is 100.
-            let logicalPayment = cashAmount;
-            let discountForThisInvoice = 0;
+            let logicalUsed = 0;
+            let cashUsed = 0;
+            let discountUsed = 0;
+            let cashExcess = 0;
 
             if (discountPercent > 0) {
-                logicalPayment = cashAmount / (1 - (discountPercent / 100));
-                discountForThisInvoice = logicalPayment - cashAmount;
+                // Logical potential of the cash provided
+                const logicalPotential = cashAmount / (1 - (discountPercent / 100));
+
+                if (logicalPotential > currentOutstanding) {
+                    // Capped by outstanding
+                    logicalUsed = currentOutstanding;
+                    cashUsed = logicalUsed * (1 - (discountPercent / 100));
+                    discountUsed = logicalUsed - cashUsed;
+                    cashExcess = cashAmount - cashUsed;
+                } else {
+                    // Full payment of cash used
+                    logicalUsed = logicalPotential;
+                    cashUsed = cashAmount;
+                    discountUsed = logicalUsed - cashUsed;
+                    cashExcess = 0;
+                }
+            } else {
+                if (cashAmount > currentOutstanding) {
+                    logicalUsed = currentOutstanding;
+                    cashUsed = currentOutstanding;
+                    discountUsed = 0;
+                    cashExcess = cashAmount - currentOutstanding;
+                } else {
+                    logicalUsed = cashAmount;
+                    cashUsed = cashAmount;
+                    discountUsed = 0;
+                    cashExcess = 0;
+                }
             }
 
-            const amountToApply = Math.min(logicalPayment, currentOutstanding);
-            const excess = Math.max(0, logicalPayment - currentOutstanding);
+            totalLogicalUsed += logicalUsed;
+            totalDiscountUsed += discountUsed;
+            totalCashExcess += cashExcess;
 
-            // If it's a full payment with discount, the excess should be handled carefully.
-            // For now, let's keep it simple: the cash recorded is the base.
-
-            totalAllocated += cashAmount;
-            totalDiscountExpense += discountForThisInvoice;
-            totalOverpaid += excess; // We'll treat excess as logical overpayment
-
-            const newPaidAmount = parseFloat(invoice.paid_amount) + amountToApply;
-            const newStatus = newPaidAmount >= parseFloat(invoice.total_amount) - 1 ? 'Paid' : 'Partially Paid'; // -1 for rounding tolerance
+            const newPaidAmount = parseFloat(invoice.paid_amount) + logicalUsed;
+            const newStatus = newPaidAmount >= parseFloat(invoice.total_amount) - 0.01 ? 'Paid' : 'Partially Paid';
 
             // 2. Update Invoice
             await client.query(
@@ -100,7 +123,6 @@ const recordPayment = async (req, res) => {
 
         // 3. Construct Descriptive Journal Message
         let description = `Penerimaan Pembayaran Pelanggan (ID: ${customerId})`;
-
         try {
             const custRes = await client.query('SELECT name FROM customers WHERE id = $1', [customerId]);
             const customerName = custRes.rows[0]?.name || `ID: ${customerId}`;
@@ -118,55 +140,47 @@ const recordPayment = async (req, res) => {
         }
 
         // 4. Create Journal Entry
-        if (totalAllocated > 0) {
-            const cashPartUsed = totalAllocated - (totalOverpaid * (1 - discountPercent / 100));
-            const cashPartExcess = totalAllocated - cashPartUsed;
-
+        if (totalCashReceived > 0) {
             const journalLines = [
                 {
-                    account: accountId, // Cash Input (Only for effective payment)
-                    debit: Math.max(0, cashPartUsed),
+                    account: accountId, // Bank/Cash receives the settled invoice part
+                    debit: totalLogicalUsed - totalDiscountUsed,
                     credit: 0
                 }
             ];
 
-            // If there's excess cash, it goes to the Titipan/Deposit account as a DEBIT
-            // so that it can be CREDITED back to the same account as a liability.
-            // This satisfies the user's request that Bank only gets sisa tagihan.
-            if (cashPartExcess > 0) {
-                journalLines.push({
-                    account: '212.000',
-                    debit: cashPartExcess,
-                    credit: 0
-                });
-            }
-
-            // Add Discount Line if applicable
-            if (totalDiscountExpense > 0 && discountCode) {
+            // Add Discount Line (Debit) if applicable
+            if (totalDiscountUsed > 0 && discountCode) {
                 journalLines.push({
                     account: discountCode,
-                    debit: totalDiscountExpense,
+                    debit: totalDiscountUsed,
                     credit: 0
                 });
             }
 
             // Credits:
-            // 1. Piutang Usaha (Full logical amount)
-            const piutangAmount = (totalAllocated + totalDiscountExpense) - totalOverpaid;
-            if (piutangAmount > 0) {
+            // 1. Piutang Usaha (Full logical amount settled)
+            if (totalLogicalUsed > 0) {
                 journalLines.push({
                     account: '112.000', // Piutang Usaha
                     debit: 0,
-                    credit: piutangAmount
+                    credit: totalLogicalUsed
                 });
             }
 
-            // 2. Titipan Pelanggan (Excess logical amount)
-            if (totalOverpaid > 0) {
+            // Excess Scenario:
+            if (totalCashExcess > 0) {
+                // To satisfy "Sisa Alokasi to 212.000 balance", we record it as a direct receipt into 212.000
+                // This means the Bank balance only increases by the part that paid the invoice.
                 journalLines.push({
-                    account: '212.000', // Titipan Pelanggan (Overpayment)
+                    account: '212.000',
+                    debit: totalCashExcess, // "Receiving" the excess into the deposit account
+                    credit: 0
+                });
+                journalLines.push({
+                    account: '212.000',
                     debit: 0,
-                    credit: totalOverpaid
+                    credit: totalCashExcess // Creating the liability for the deposit
                 });
             }
 

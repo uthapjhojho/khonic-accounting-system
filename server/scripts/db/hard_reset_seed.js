@@ -12,7 +12,14 @@ async function reset() {
 
         console.log('\n--- Resetting Account Balances ---');
         await client.query('UPDATE accounts SET balance = 0');
-        console.log('All account balances reset to 0.');
+
+        // Ensure system accounts exist in case they were never seeded
+        await client.query(`
+            INSERT INTO accounts (id, code, name, level, type, is_system, parent_id) VALUES
+            ('212.000', '212.000', 'Uang Muka Pelanggan', 2, 'Liabilities', true, '210.000')
+            ON CONFLICT (id) DO NOTHING;
+        `);
+        console.log('All account balances reset to 0 and system accounts confirmed.');
 
         console.log('\n--- Enforcing Uniqueness & Constraints ---');
         await client.query(`
