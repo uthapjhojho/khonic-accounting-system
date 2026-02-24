@@ -234,7 +234,6 @@ BEGIN
     SELECT id INTO cust_id_2 FROM customers WHERE name = 'CV Maju Mundur';
     SELECT id INTO cust_id_3 FROM customers WHERE name = 'PT. Marsha Lenathea Lapian';
     SELECT id INTO cust_id_4 FROM customers WHERE name = 'PT. Azizi Asadel';
-    -- ID 7 in original script was 'PT. Inovasi Abadi' based on the alphabetical order in the INSERT
     SELECT id INTO cust_id_7 FROM customers WHERE name = 'PT. Inovasi Abadi';
 
     INSERT INTO invoices (customer_id, invoice_no, date, due_date, total_amount, paid_amount, status) VALUES
